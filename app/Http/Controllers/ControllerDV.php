@@ -11,7 +11,7 @@ class ControllerDV extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index() {
-        return view('portada');
+        return view('portada')->with('idSec','1');
     }
     public function front() {
         return view('');
@@ -21,5 +21,18 @@ class ControllerDV extends Controller {
     }
     public function footer() {
         return view('footer');
+    }
+    public function registro() {
+        return view('registro-login');
+    }
+    public function panel() {
+        return view('panelNoticia');
+    }
+    public function detalle() {
+        return view('noticiaDetalle');
+    }
+    public function editarNoticia($id) {
+        $data['id'] = $id;
+        return View('editarNoticia', $data);
     }
 }

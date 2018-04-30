@@ -21,3 +21,7 @@ Route::get('params/{param}', function($param) {
 Route::get('/', 'ControllerDV@index');
 Route::get('header', 'ControllerDV@header');
 Route::get('footer', 'ControllerDV@footer');
+Route::get('registro', 'ControllerDV@registro');
+Route::get('panel', 'ControllerDV@panel');
+Route::get('detalle', 'ControllerDV@detalle');
+Route::get('editar/{id}', 'ControllerDV@editarNoticia');
