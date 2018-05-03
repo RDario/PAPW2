@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateModeloPruebasTable extends Migration
+class CreateSeccionTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,9 +13,12 @@ class CreateModeloPruebasTable extends Migration
      */
     public function up()
     {
-        Schema::create('modelo_pruebas', function (Blueprint $table) {
-            $table->increments('id');
+        Schema::create('seccion', function (Blueprint $table) {
+            $table->increments('idSeccion');
+            $table->string('nombre', 40);
+            $table->integer('idUsuario')->unsigned();
             $table->timestamps();
+            $table->foreign('idUsuario')->references('idUsuario')->on('usuarios');
         });
     }
 
@@ -26,6 +29,6 @@ class CreateModeloPruebasTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('modelo_pruebas');
+        Schema::dropIfExists('seccion');
     }
 }
