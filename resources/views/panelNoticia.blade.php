@@ -1,4 +1,4 @@
-<?php
+@php
 include("conexionBD.php");
 require_once "DVSeccion.php";
 $connection = conectarBD();
@@ -12,8 +12,10 @@ if ($resultQuery->num_rows) {
 	foreach ($rows as $row) {
 		$arraySecciones[count($arraySecciones)] = new DVSeccion($row['idSeccion'], $row['nombreSeccion'], $row['idUsuario']);		
 	}
-} ?>
-@include('header')	
+}
+@endphp
+
+@include('header')
 <div class="panel">
 	<div class="container">
 		<div class="divColumnLeft">
@@ -26,13 +28,12 @@ if ($resultQuery->num_rows) {
 				<div class="address">
 					<span>Sección</span>
 					<select class= "selectSeccion" name="txtSeccion" tabindex="1" required="">
-						<?php
+						@php
 						$num = count($arraySecciones);
 						for ($i=0; $i < $num; $i++) {
 							$elemento = $arraySecciones[$i];
 							echo "<option value=$elemento->idSeccion>$elemento->nombreSeccion</option>";
-						}
-						?>
+						} @endphp
 					</select>
 				</div>
 				<div class="address">
@@ -40,12 +41,11 @@ if ($resultQuery->num_rows) {
 					<textarea type="text" name="txtDescripcion" tabindex="2"></textarea>
 				</div>
 				<div class="address">
-					<?php
+					@php
 					$nomUser = $_SESSION["nombreULog"];
-					$apellidosUser = $_SESSION["apellidosULog"];
-					?>
+					$apellidosUser = $_SESSION["apellidosULog"]; @endphp
 					<span>Autor</span>
-					<input class="inpAutor" type="text" name="txtAutor" tabindex="6" required="" readOnly="" value="<?php echo "$nomUser"." "."$apellidosUser";?>">
+					<input class="inpAutor" type="text" name="txtAutor" tabindex="6" required="" readOnly="" value="@php echo "$nomUser"." "."$apellidosUser"; @endphp">
 				</div>
 				<div class="address">
 					<span>¿Noticia especial?</span>
@@ -72,10 +72,10 @@ if ($resultQuery->num_rows) {
 			</form>
 		</div>
 
-		<?php
+		@php
 		if (isset($_SESSION["tipoULog"])) {
 			$tipoUser = $_SESSION["tipoULog"];
-			if (strcmp($tipoUser, "Administrador") == 0) { ?>
+			if (strcmp($tipoUser, "Administrador") == 0) { @endphp
 			<div class="divColumnRight">
 				<h3>Subir nueva sección</h3>
 				<form action="seccion_success_page.php" method="POST">
@@ -93,14 +93,13 @@ if ($resultQuery->num_rows) {
 				<h3>Editar seccion</h3>
 				<form method="POST" action="seccion_update_success.php">
 					<div class="address">
-						<select id="inputIdSeccion"class="selectSeccion" name="IdSeccionUpdate" required="" onchange="getSeccion()">
-							<?php
+						<select id="inputIdSeccion" class="selectSeccion" name="IdSeccionUpdate" required="" onchange="getSeccion()">
+							@php
 							$num = count($arraySecciones);
 							for ($i=0; $i < $num; $i++) {
 								$elemento = $arraySecciones[$i];
 								echo "<option value=$elemento->idSeccion>$elemento->nombreSeccion</option>";
-							}
-							?>
+							} @endphp
 						</select>
 						<div class="address">
 							<input id="inputTextSeccion" class="inpTitulo" type="text" name="txtTitleSecUpdate" required="">
@@ -117,13 +116,12 @@ if ($resultQuery->num_rows) {
 				<form method="POST" action="seccion_delete_success.php">
 					<div class="address">
 						<select class= "selectSeccion" name="txtSeccionEliminar" required="">
-							<?php
+							@php
 							$num = count($arraySecciones);
 							for ($i=0; $i < $num; $i++) {
 								$elemento = $arraySecciones[$i];
 								echo "<option value=$elemento->idSeccion>$elemento->nombreSeccion</option>";
-							}
-							?>
+							} @endphp
 						</select>
 						<div class="address new">
 							<input id="idBtnSubmitEliminar" name="inpEliminarSecc" type="submit" value="Eliminar" onclick="clicked(event);">
@@ -131,11 +129,12 @@ if ($resultQuery->num_rows) {
 					</div>
 				</form>
 			</div>
-			<?php }
-		} ?>
+			@php }
+		} @endphp
 		<div class="clearfix"></div>
 	</div>
 </div>
+@include('footer')
 
 <script type="text/javascript">
 	function clicked(e){

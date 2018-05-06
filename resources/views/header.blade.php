@@ -1,5 +1,7 @@
-<?php SESSION_START();
-error_reporting(0); ?>
+@php
+SESSION_START();
+error_reporting(0);
+@endphp
 
 <!doctype html>
 <html lang="{{ app()->getLocale() }}">
@@ -25,38 +27,48 @@ error_reporting(0); ?>
                     </div>
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav">
-                            <?php
+                            @php
                             if (isset($_SESSION["tipoULog"])) {
                                 $idUser = $_SESSION['idULog'];
                                 $tipoUser = $_SESSION["tipoULog"];
-                                if (strcmp($tipoUser, "Administrador") == 0 || strcmp($tipoUser, "Reportero") == 0) { ?>
-                                <li><a href="panelNoticia.php">Subir noticia</a></li>
-                                <li><a href="listadoNoticias.php?id=<?php echo $idUser;?>&tipo=<?php echo $tipoUser;?>">Noticias sin publicar</a></li>
-                                <?php }
-                            } ?>
+                                if (strcmp($tipoUser, "Administrador") == 0 || strcmp($tipoUser, "Reportero") == 0) {
+                                    @endphp
+                                    <li><a href="panelNoticia.php">Subir noticia</a></li>
+                                    <li><a href="listadoNoticias.php?id=<?php echo $idUser;?>&tipo=<?php echo $tipoUser;?>">Noticias sin publicar</a></li>
+                                    @php
+                                }
+                            } @endphp
                         </ul>
                         <div id="divCuadroPerfil">
                             <span id="txtCuadroPerfil">
-                                <?php
+                                @php
                                 if (isset($_SESSION["nombreULog"])) {
-                                    $nomUser = $_SESSION['nombreULog']; ?>
-                                    <a id="txtCuadroPerfil" href="perfil.php?id=<?php echo $idUser;?>">Hola <?php echo "$nomUser"; ?><a/>
-                                        <?php if (isset($_SESSION['imgAvatarULog'])) { 
-                                            $imgAvatarLog = $_SESSION['imgAvatarULog']; ?>
+                                    $nomUser = $_SESSION['nombreULog'];
+                                    @endphp
+                                    <a id="txtCuadroPerfil" href="perfil.php?id=<?php echo $idUser;?>">Hola @php echo "$nomUser"; @endphp
+                                        <a/>
+                                        @php
+                                        if (isset($_SESSION['imgAvatarULog'])) {
+                                            $imgAvatarLog = $_SESSION['imgAvatarULog'];
+                                            @endphp
                                             <img id="imgCuadroPerfil" src="<?php echo 'images/profile/'.$imgAvatarLog; ?>" style="width: 50px; height: 50px;" >
-                                            <?php } else { ?>
-                                            <img id="imgCuadroPerfil" src="images/avatar.jpg" style="width: 50px; height: 50px;" >
-                                            <?php } ?>
-                                            <a id="txtDeslog" href="" onclick="">Cerrar sesión<a/>
-                                                <?php } else {
-                                                    print_r('<a href="registro">Inicia sesión aquí<a/>');
-                                                } ?>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </nav>
-                        </div>
-                    </div>
-                </body>
-                </html>
+                                            @php
+                                        } else {
+                                         @endphp
+                                         <img id="imgCuadroPerfil" src="images/avatar.jpg" style="width: 50px; height: 50px;" >
+                                         @php } @endphp
+
+                                         <a id="txtDeslog" href="" onclick="">Cerrar sesión<a/>
+                                            @php
+                                        } else {
+                                           print_r('<a href="registro">Inicia sesión aquí<a/>');
+                                       } @endphp
+                                   </span>
+                               </div>
+                           </div>
+                       </div>
+                   </nav>
+               </div>
+           </div>
+       </body>
+       </html>

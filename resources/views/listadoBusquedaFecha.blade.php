@@ -1,4 +1,4 @@
-<?php
+@php
 include("conexionBD.php");
 require_once "DVNoticia.php";
 $connection = conectarBD();
@@ -38,7 +38,9 @@ if ($resultQuery->num_rows) {
 			'',
 			'');
 	}
-} ?>
+}
+@endphp
+
 @include('header')
 <div class="panelEdicion">
 	<div class="container">
@@ -47,22 +49,23 @@ if ($resultQuery->num_rows) {
 			<br>
 			<div class="listaNoticias">
 				<ul class="ulListaNoticias">
-					<?php
+					@php
 					for ($i=0; $i < count($arrayNoticias); $i++) {
-						$elemento = $arrayNoticias[$i]; ?>
+						$elemento = $arrayNoticias[$i]; @endphp
 						<li class="elementLista">
 							<div class="divElementNoti">
-								<a class="txtTituloNV"  href="noticiaDetalle.php?id=<?php echo $elemento->idNoticia; ?>"><?php echo $elemento->titulo; ?><a/>
+								<a class="txtTituloNV"  href="noticiaDetalle.php?id=@php echo $elemento->idNoticia; @endphp">@php echo $elemento->titulo; @endphp<a/>
 									<br>
 									<span>Reportero: </span>
-									<a class="txtAutorNV" href="perfil.php?id=<?php echo $elemento->idUsuario; ?>"><?php echo $elemento->autor; ?></a>
+									<a class="txtAutorNV" href="perfil.php?id=@php echo $elemento->idUsuario; @endphp">@php echo $elemento->autor; @endphp</a>
 									<span>Fecha de publicación: </span>
-									<span class="txtFechaNV"><?php echo $elemento->fecha; ?></span>
+									<span class="txtFechaNV">@php echo $elemento->fecha; @endphp</span>
 								</div>
 							</li>
-							<?php } ?>
+							@php } @endphp
 						</ul>
 					</div>
 				</div>
 			</div>
 		</div>
+		@include('footer')

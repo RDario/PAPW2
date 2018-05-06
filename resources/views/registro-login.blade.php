@@ -211,3 +211,4 @@
             <div class="clearfix"></div>
         </div>
     </div>
+   @include('footer')
