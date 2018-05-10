@@ -8,7 +8,7 @@ $connection = conectarBD();
 <head>
 	<title>Accediendo</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<meta http-equiv="refresh" content="8, URL='index.php'">
+	<meta http-equiv="refresh" content="8, URL='/portada'">
 </head>
 <body>
 	<br>

@@ -190,7 +190,8 @@
                     </form>
                 </div>
                 <div class="col-md-6 account-left second">
-                    <form action="login_success_page.php" method="POST">
+                    <form action="{{ route('login') }}" method="POST">
+                        {{ csrf_field() }}
                         <div class="account-top heading">
                             <h3>Login</h3>
                         </div>
