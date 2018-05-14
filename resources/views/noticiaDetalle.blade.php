@@ -1,101 +1,4 @@
 @php
-include("conexionBD.php");
-require_once "DVComentario.php";
-require_once "DVNoticia.php";
-require_once "DVMultimedia.php";
-require_once "DVSeccion.php";
-require_once "DVLike.php";
-$idNoticia = 1; // Change this
-$connection = conectarBD();
-$querySelect = "CALL obtenerNoticiaCompletaById('$idNoticia')";
-$resultQuery = mysqli_query($connection, $querySelect) or die (mysqli_error($connection));
-mysqli_next_result($connection);
-
-if ($resultQuery->num_rows) {
-	$rows = $resultQuery->fetch_all(MYSQLI_ASSOC);
-	foreach ($rows as $row) {
-		$noticiaComplete = new DVNoticia(
-			$row['idNoticia'],
-			$row['titulo'],
-			$row['descripcion'],
-			$row['seccion'],
-			$row['idSeccion'],
-			$row['fecha'],
-			$row['texto'],
-			$row['autor'],
-			$row['idUsuario'],
-			$row['isPublica'],
-			$row['isEspecial'],
-			$row['cintillo']);
-	}
-}
-
-$selectCommens = "CALL obtenerComentarios('$idNoticia')";
-$QueryCommens = mysqli_query($connection, $selectCommens) or die (mysqli_error($connection));
-mysqli_next_result($connection);
-
-$arrayComentarios = array();
-if ($QueryCommens->num_rows) {
-	$rows = $QueryCommens->fetch_all(MYSQLI_ASSOC);
-	foreach ($rows as $row) {
-		$arrayComentarios[count($arrayComentarios)] = new DVComentario(
-			$row['idComentario'],
-			$row['autor'],
-			$row['idUsuario'],
-			$row['imgAvatar'],
-			$row['texto'],
-			$row['fecha']);
-	}
-}
-
-$querySeccion = "SELECT idSeccion, nombreSeccion FROM allseccionesconnoticias;";
-$result = mysqli_query($connection, $querySeccion) or die (mysqli_error($connection));
-mysqli_more_results($connection);
-
-$arraySecciones = array();
-if ($result->num_rows) {
-	$rows = $result->fetch_all(MYSQLI_ASSOC);
-	foreach ($rows as $row) {
-		$arraySecciones[count($arraySecciones)] = new DVSeccion(
-			$row['idSeccion'],
-			$row['nombreSeccion'],
-			'');
-	}
-}
-
-$queryLike = "CALL obtenerLikesByNoti('$idNoticia')";
-$Queryke = mysqli_query($connection, $queryLike) or die (mysqli_error($connection)); 
-mysqli_next_result($connection);
-if ($Queryke->num_rows) {
-	$arrayLikes = array();
-	$rows = $Queryke->fetch_all(MYSQLI_ASSOC);
-	foreach ($rows as $row) {
-		$arrayLikes[count($arrayLikes)] = new DVLike(
-			$row['idLike'], 
-			$row['idNoticia'],
-			$row['idUsuario']);
-	}
-} 
-
-//$idNoti = (int) $noticiaComplete->idNoticia;
-$idNoti = 3;
-$queryMultimedia = "CALL obtenerMultimediaById('$idNoti')";
-$Query = mysqli_query($connection, $queryMultimedia) or die (mysqli_error($connection));
-if ($Query->num_rows) {
-	$arrayMediaImg = array();
-	$rows = $Query->fetch_all(MYSQLI_ASSOC);
-	foreach ($rows as $row) {
-		if ($row['urlMedia'] != NULL && $row['urlMedia'] != "") {
-			$arrayMediaImg[count($arrayMediaImg)] = new DVMultimedia(
-				$row['idMultimedia'], 
-				$row['idNoticia'],
-				$row['urlMedia'],
-				$row['tipoMedia']);
-		}
-	}
-}
-mysqli_close($connection); 
-
 $arrayDias = array(
 	1=>"01",
 	2=> "02",
@@ -171,265 +74,298 @@ $arrayAnio = array(
 				<div class="col-md-8 mag-innert-left">
 					<div class="single-left-grid">
 						<div class="slideshow-container">
-							@php
-							for ($i=0; $i <count($arrayMediaImg); $i++) {
-								$elementoMedia = $arrayMediaImg[$i]; @endphp
-								<div class="mySlides">
-									@php
-									if ($elementoMedia->tipoMedia == 'IMG') { @endphp
-									<img src="@php echo 'images/'.$elementoMedia->urlMedia; @endphp" style="width:100%">
-									@php 
-								} elseif ($elementoMedia->tipoMedia == 'VID') { @endphp
+							@if (isset($dataMulti))
+							@foreach ($dataMulti as $multi)
+							<div class="mySlides">
+								@if($multi->tipoMedia == 'IMG')
+								<img src="images/{{ $multi->urlMedia }}" style="width:100%">
+								@elseif($multi->tipoMedia == 'VID')
 								<video width="100%" height="320" controls>
-									<source src="@php echo 'videos/'.$elementoMedia->urlMedia; @endphp" type="video/mp4">
+									<source src="videos/{{ $multi->urlMedia }}" type="video/mp4">
 									</video>
-									@php } @endphp
+									@endif
+									@endif
 								</div>
-								@php } @endphp
+								@endforeach
+								@endif
 								<a class="prev" onclick="plusSlides(-1)">&#10094;</a>
 								<a class="next" onclick="plusSlides(1)">&#10095;</a>
 							</div>
 							<br>
 							<div style="text-align:center">
 								@php
-								for ($i=0; $i < count($arrayMediaImg); $i++) { @endphp
-								<span class="dot" onclick="currentSlide(@php 
-									echo $i; @endphp)"></span>
-									@php } @endphp 
-								</div>
-								<h2>@php echo $noticiaComplete->titulo; @endphp</h2>
-								<h4>@php echo $noticiaComplete->descripcion; @endphp</h4>
-								<p class="textcComplete">@php echo $noticiaComplete->textoCompleto; @endphp</p>
-								<div class="single-bottom">
-									@php 
-									$datePubli = new DateTime($noticiaComplete->fecha);
-									@endphp
-									@php
-									if (isset($_SESSION["idULog"])) {
-										$idULog = $_SESSION["idULog"]; @endphp
-										@php
-										$isLiked = false;
-										for ($n=0; $n < count($arrayLikes); $n++) {
-											$elemAux = $arrayLikes[$n];
-											if ($idULog == $elemAux->idUsuario && $noticiaComplete->idNoticia == $elemAux->idNoticia) {
-												$isLiked = true;
-											}
-										}
-										for ($x=0; $x < count($arrayLikes); $x++) {
-											$elementoLike = $arrayLikes[$x];
-											if ($idULog == $elementoLike->idUsuario && $noticiaComplete->idNoticia == $elementoLike->idNoticia) { @endphp
-											<form action="like_delete_success.php" method="POST" >
-												<input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
-												<input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
-												<input type="submit" id="btnLiked" value="Te gusta"/>
-											</form>
-											@php 
-											break; } else if ($idULog == $elementoLike->idUsuario && $noticiaComplete->idNoticia != $elementoLike->idNoticia) { @endphp
-											<form action="like_insert_success.php" method="POST">
-												<input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
-												<input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
-												<input type="submit" id="btnLike" value="¡ME GUSTA!"/>
-											</form>
-											@php
-										} else if ($idULog != $elementoLike->idUsuario && $noticiaComplete->idNoticia == $elementoLike->idNoticia) {
-											if (!$isLiked) { @endphp
-											<form action="like_insert_success.php" method="POST">
-												<input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
-												<input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
-												<input type="submit" id="btnLike" value="¡ME GUSTA!"/>
-											</form>
-											@php } else { @endphp
-											@php } 
-										}
-									}
-								} @endphp
-								<ul>
-									<li><span>Reportero:</span> <a href="perfil.php?id=@php echo $noticiaComplete->idUsuario; @endphp">@php echo $noticiaComplete->autor; @endphp</a></li>
-									<li><span>Fecha de publicacion </span>@php 
-									echo $datePubli->format('H:i:s')." del día ".$datePubli->format('d-m-Y'); @endphp</li>
-									<li><span>@php 
-								echo count($arrayComentarios)." comentario(s)"; @endphp</span></li>
-							</ul>
-						</div>
-					</div>
-					<br>
-					@php
-					for ($i=0; $i < count($arrayComentarios); $i++) { 
-						$elementoComen = $arrayComentarios[$i]; 
-						$date = new DateTime($elementoComen->fecha); @endphp
-						<div class="divCajaComentario">
-							<img class="imgComentario" src="@php echo 'images/profile/'.$elementoComen->urlMediaAvatar; @endphp" style="width: 60px; height: 60px; float: left;">
-							<a href="perfil.php?id=@php echo $elementoComen->idUsuario; @endphp">@php echo $elementoComen->nombreUsuario; @endphp</a>
-							<br>
-							<p>@php echo $elementoComen->textoComentario; @endphp</p>
-							<span>Publicado a las @php 
-							echo $date->format('H:i:s')." del día ".$date->format('d-m-Y'); @endphp</span>
-							@php
-							if (isset($_SESSION["tipoULog"])) { 
-								$tipoUserLog = $_SESSION["tipoULog"];
-								if ($tipoUserLog == 'Administrador') { @endphp
-								<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
+								for ($i=0; $i < count($dataMulti); $i++) { @endphp
+								<span class="dot" onclick="currentSlide({{ $i }})"></span>
+								@php } @endphp 
+							</div>
+							@if(isset($dataNoti))
+							@foreach($dataNoti as $noti))
+							<h2>{{ $noti->titulo }}</h2>
+							<h4>{{ $noti->descripcion }}</h4>
+							<p class="textcComplete">{{ $noti->textoCompleto }}</p>
+							<div class="single-bottom">
 								@php 
-							} elseif ($tipoUserLog == 'Reportero') {
-								$idUserLogFirst = $_SESSION["idULog"];
-								if ($idUserLogFirst == $noticiaComplete->idUsuario) { @endphp
-								<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
-								@php }
-							} @endphp
-							@php } @endphp
-							<hr>
+								$datePubli = new DateTime($noticiaComplete->fecha);
+								@endphp
+								<ul>
+									<li><span>Reportero:</span> <a href="perfil/{{ $noti->idUsuario }}">{{ $noti->autor }}</a></li>
+									<li><span>Fecha de publicacion </span>{{ $datePubli->format('H:i:s')." del día ".$datePubli->format('d-m-Y') }}</li>
+									<li><span>{{ count($dataComents)." comentario(s)" }}</span>
+									</li>
+								</ul>
+							</div>
+							@endforeach
+							@endif
 						</div>
-						<hr>
-						@php } @endphp
-						<div class="leave">
-							<h4>Deja un comentario</h4>
-							<form id="commentform" method="POST" action="comentario_insert_success.php">
-								<p class="comment-form-author-name"><label for="author">Nombre</label>
-									@php
-									if (isset($_SESSION["nombreULog"])) {
-										$nomUserLog = $_SESSION["nombreULog"]." ".$_SESSION['apellidosULog']; @endphp
-										<input name="txtNombreUser" type="text" size="30" required="" readOnly="" value="@php echo $nomUserLog; @endphp">
-										@php } else { @endphp
-										<input name="txtNombreUser" type="text" size="30" required="" placeholder="Ingresa un nombre para identificarte" value="">
-										@php } @endphp
-									</p>
-									<p class="comment-form-email">
-										<label class="email">Correo eléctronico</label>
+						<br>
+						@if(isset($dataComents))
+						@foreach($dataComents as $coment)
+						@php
+						$date = new DateTime($coment->fecha);
+						@endphp
+						<div class="divCajaComentario">
+								<img class="imgComentario" src="images/profile/{{ $coment->urlMediaAvatar }}" style="width: 60px; height: 60px; float: left;">
+								<a href="perfil/{{ $coment->idUsuario }}">{{ $coment->nombreUsuario }}</a>
+								<br>
+								<p>{{ $coment->textoComentario }}</p>
+								<span>Publicado a las {{ $date->format('H:i:s')." del día ".$date->format('d-m-Y') }}</span>
+								@php
+								if (isset($_SESSION["tipoULog"])) { 
+									$tipoUserLog = $_SESSION["tipoULog"];
+									if ($tipoUserLog == 'Administrador') { @endphp
+									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
+									@php 
+								} elseif ($tipoUserLog == 'Reportero') {
+									$idUserLogFirst = $_SESSION["idULog"];
+									if ($idUserLogFirst == $noticiaComplete->idUsuario) { @endphp
+									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
+									@php }
+								} @endphp
+								@php } @endphp
+								<hr>
+							</div>
+						@endforeach
+						@endif
+
+						@php
+						for ($i=0; $i < count($arrayComentarios); $i++) { 
+							$elementoComen = $arrayComentarios[$i]; 
+							$date = new DateTime($elementoComen->fecha); @endphp
+							<div class="divCajaComentario">
+								<img class="imgComentario" src="@php echo 'images/profile/'.$elementoComen->urlMediaAvatar; @endphp" style="width: 60px; height: 60px; float: left;">
+								<a href="perfil.php?id=@php echo $elementoComen->idUsuario; @endphp">@php echo $elementoComen->nombreUsuario; @endphp</a>
+								<br>
+								<p>@php echo $elementoComen->textoComentario; @endphp</p>
+								<span>Publicado a las @php 
+								echo $date->format('H:i:s')." del día ".$date->format('d-m-Y'); @endphp</span>
+								@php
+								if (isset($_SESSION["tipoULog"])) { 
+									$tipoUserLog = $_SESSION["tipoULog"];
+									if ($tipoUserLog == 'Administrador') { @endphp
+									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
+									@php 
+								} elseif ($tipoUserLog == 'Reportero') {
+									$idUserLogFirst = $_SESSION["idULog"];
+									if ($idUserLogFirst == $noticiaComplete->idUsuario) { @endphp
+									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
+									@php }
+								} @endphp
+								@php } @endphp
+								<hr>
+							</div>
+							<hr>
+							@php } @endphp
+							<div class="leave">
+								<h4>Deja un comentario</h4>
+								<form id="commentform" method="POST" action="comentario_insert_success.php">
+									<p class="comment-form-author-name"><label for="author">Nombre</label>
 										@php
-										if (isset($_SESSION["correoULog"])) {
-											$emailUserLog = $_SESSION["correoULog"]; @endphp
-											<input name="txtEmailUser" type="text" required="" readOnly="" value="@php echo $emailUserLog; @endphp">
+										if (isset($_SESSION["nombreULog"])) {
+											$nomUserLog = $_SESSION["nombreULog"]." ".$_SESSION['apellidosULog']; @endphp
+											<input name="txtNombreUser" type="text" size="30" required="" readOnly="" value="@php echo $nomUserLog; @endphp">
 											@php } else { @endphp
-											<input name="txtEmailUser" type="text" required="" placeholder="Ingresa un correo eléctronico válido" 
-											value="" pattern="[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{1,5}">
+											<input name="txtNombreUser" type="text" size="30" required="" placeholder="Ingresa un nombre para identificarte" value="">
 											@php } @endphp
 										</p>
-										<br>
-										<p class="comment-form-comment">
-											<textarea placeholder="Comenta lo que quieras!" name="txtTextoUser" requerid=""></textarea>
-										</p>
-										<div class="clearfix"></div>
-										@php
-										if (isset($_SESSION["idULog"])) {
-											$idUserLog = $_SESSION["idULog"]; @endphp
-											<input name="txtIdUser" type="hidden" required="" value="@php echo $idUserLog;@endphp">
-											@php } else { @endphp
-											<input name="txtIdUser" type="hidden" required="" value="">
-											@php } @endphp
-											<input name="txtIdNoticia" type="hidden" value="@php echo $noticiaComplete->idNoticia; @endphp" required="">
-											<input name="txtIdCommentPapa" type="hidden" value="0" required="">
-											<p class="form-submit">
-												<input type="submit" value="Enviar">
+										<p class="comment-form-email">
+											<label class="email">Correo eléctronico</label>
+											@php
+											if (isset($_SESSION["correoULog"])) {
+												$emailUserLog = $_SESSION["correoULog"]; @endphp
+												<input name="txtEmailUser" type="text" required="" readOnly="" value="@php echo $emailUserLog; @endphp">
+												@php } else { @endphp
+												<input name="txtEmailUser" type="text" required="" placeholder="Ingresa un correo eléctronico válido" 
+												value="" pattern="[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{1,5}">
+												@php } @endphp
+											</p>
+											<br>
+											<p class="comment-form-comment">
+												<textarea placeholder="Comenta lo que quieras!" name="txtTextoUser" requerid=""></textarea>
 											</p>
 											<div class="clearfix"></div>
-										</form>
-									</div>
-								</div>
-
-								<div class="col-md-4 mag-inner-right">
-									<div class="sign_main" style="background-color: #f8f8f8;">
-										<h4 class="side">Secciones</h4>
-										<ul>
 											@php
-											if (count($arraySecciones) > 0) {
-												for ($i=0; $i < count($arraySecciones); $i++) { 
-													$elemento = $arraySecciones[$i]; @endphp
-													<li><a href="index.php?idSec=@php echo $elemento->idSeccion; @endphp">@php echo $elemento->nombreSeccion; @endphp</a></li>
-													@php }
-												} @endphp
-											</ul>
-										</div>    
+											if (isset($_SESSION["idULog"])) {
+												$idUserLog = $_SESSION["idULog"]; @endphp
+												<input name="txtIdUser" type="hidden" required="" value="@php echo $idUserLog;@endphp">
+												@php } else { @endphp
+												<input name="txtIdUser" type="hidden" required="" value="">
+												@php } @endphp
+												<input name="txtIdNoticia" type="hidden" value="@php echo $noticiaComplete->idNoticia; @endphp" required="">
+												<input name="txtIdCommentPapa" type="hidden" value="0" required="">
+												<p class="form-submit">
+													<input type="submit" value="Enviar">
+												</p>
+												<div class="clearfix"></div>
+											</form>
+										</div>
 									</div>
 
 									<div class="col-md-4 mag-inner-right">
 										<div class="sign_main" style="background-color: #f8f8f8;">
-											<h4 class="side">Búsqueda</h4>
-											<div class="sign_up">
-												<form method="GET" action="listadoBusqueda.php">
-													<input type="text" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
-													<input type="submit" value="Buscar">
-												</form>
-											</div>
-											<div class="sign_up">
-												<span>Búsqueda por fecha</span>
-												<form method="POST" action="listadoBusquedaFecha.php">
-													<div class="address">
-														<span>Del día</span>
-														<select class="selectFecha" id="inpNacDia" name="txtDiaFrom" placeholder="">
-															@php
-															foreach($arrayDias as $key => $value) {
-																echo "<option value=' $value '> $value </option>";
-															} @endphp
-														</select>
-														<select class="selectFecha" id="inpNacMes" name="txtMesFrom" placeholder="">
-															@php
-															foreach($arrayMes as $key => $value) {
-																echo "<option value=' $value '> $key </option>";
-															} @endphp
-														</select>
-														<select class="selectFecha" id="inpNacAnio" name="txtAnioFrom" placeholder="">
-															@php
-															foreach($arrayAnio as $key => $value) {
-																echo "<option value=' $value '> $value </option>";
-															} @endphp
-														</select>
-													</div>
-													<div class="address">
-														<span>Al día</span>
-														<select class="selectFecha" id="inpNacDia" name="txtDiaTo" placeholder="">
-															@php
-															foreach($arrayDias as $key => $value) {
-																echo "<option value=' $value '> $value </option>";
-															} @endphp
-														</select>
-														<select class="selectFecha" id="inpNacMes" name="txtMesTo" placeholder="">
-															@php
-															foreach($arrayMes as $key => $value) {
-																echo "<option value=' $value '> $key </option>";
-															} @endphp
-														</select>
-														<select class="selectFecha" id="inpNacAnio" name="txtAnioTo" placeholder="">
-															@php
-															foreach($arrayAnio as $key => $value) {
-																echo "<option value=' $value '> $value </option>";
-															} @endphp
-														</select>
-													</div>
-													<input type="submit" value="Buscar">
-												</form>
+											<h4 class="side">Secciones</h4>
+											<ul>
+												@php
+												if (count($arraySecciones) > 0) {
+													for ($i=0; $i < count($arraySecciones); $i++) { 
+														$elemento = $arraySecciones[$i]; @endphp
+														<li><a href="index.php?idSec=@php echo $elemento->idSeccion; @endphp">@php echo $elemento->nombreSeccion; @endphp</a></li>
+														@php }
+													} @endphp
+												</ul>
+											</div>    
+										</div>
+
+										<div class="col-md-4 mag-inner-right">
+											<div class="sign_main" style="background-color: #f8f8f8;">
+												<h4 class="side">Búsqueda</h4>
+												<div class="sign_up">
+													<form method="GET" action="listadoBusqueda.php">
+														<input type="text" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
+														<input type="submit" value="Buscar">
+													</form>
+												</div>
+												<div class="sign_up">
+													<span>Búsqueda por fecha</span>
+													<form method="POST" action="listadoBusquedaFecha.php">
+														<div class="address">
+															<span>Del día</span>
+															<select class="selectFecha" id="inpNacDia" name="txtDiaFrom" placeholder="">
+																@php
+																foreach($arrayDias as $key => $value) {
+																	echo "<option value=' $value '> $value </option>";
+																} @endphp
+															</select>
+															<select class="selectFecha" id="inpNacMes" name="txtMesFrom" placeholder="">
+																@php
+																foreach($arrayMes as $key => $value) {
+																	echo "<option value=' $value '> $key </option>";
+																} @endphp
+															</select>
+															<select class="selectFecha" id="inpNacAnio" name="txtAnioFrom" placeholder="">
+																@php
+																foreach($arrayAnio as $key => $value) {
+																	echo "<option value=' $value '> $value </option>";
+																} @endphp
+															</select>
+														</div>
+														<div class="address">
+															<span>Al día</span>
+															<select class="selectFecha" id="inpNacDia" name="txtDiaTo" placeholder="">
+																@php
+																foreach($arrayDias as $key => $value) {
+																	echo "<option value=' $value '> $value </option>";
+																} @endphp
+															</select>
+															<select class="selectFecha" id="inpNacMes" name="txtMesTo" placeholder="">
+																@php
+																foreach($arrayMes as $key => $value) {
+																	echo "<option value=' $value '> $key </option>";
+																} @endphp
+															</select>
+															<select class="selectFecha" id="inpNacAnio" name="txtAnioTo" placeholder="">
+																@php
+																foreach($arrayAnio as $key => $value) {
+																	echo "<option value=' $value '> $value </option>";
+																} @endphp
+															</select>
+														</div>
+														<input type="submit" value="Buscar">
+													</form>
+												</div>
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
-						</div>
-						@include('footer')
+							@include('footer')
 
-						<script type="text/javascript">
-							var slideIndex = 1;
-							showSlides(slideIndex);
+							<script type="text/javascript">
+								var slideIndex = 1;
+								showSlides(slideIndex);
 
-							function plusSlides(n) {
-								showSlides(slideIndex += n);
-							}
+								function plusSlides(n) {
+									showSlides(slideIndex += n);
+								}
 
-							function currentSlide(n) {
-								showSlides(slideIndex = n);
-							}
+								function currentSlide(n) {
+									showSlides(slideIndex = n);
+								}
 
-							function showSlides(n) {
-								var i;
-								var slides = document.getElementsByClassName("mySlides");
-								var dots = document.getElementsByClassName("dot");
-								if (n > slides.length) {slideIndex = 1} 
-									if (n < 1) {slideIndex = slides.length}
-										for (i = 0; i < slides.length; i++) {
-											slides[i].style.display = "none"; 
+								function showSlides(n) {
+									var i;
+									var slides = document.getElementsByClassName("mySlides");
+									var dots = document.getElementsByClassName("dot");
+									if (n > slides.length) {slideIndex = 1} 
+										if (n < 1) {slideIndex = slides.length}
+											for (i = 0; i < slides.length; i++) {
+												slides[i].style.display = "none"; 
+											}
+											for (i = 0; i < dots.length; i++) {
+												dots[i].className = dots[i].className.replace(" active", "");
+											}
+											slides[slideIndex-1].style.display = "block"; 
+											dots[slideIndex-1].className += " active";
 										}
-										for (i = 0; i < dots.length; i++) {
-											dots[i].className = dots[i].className.replace(" active", "");
+									</script>
+
+
+									<!-- DESMADRE DE LIKES
+									@php
+										if (isset($_SESSION["idULog"])) {
+											$idULog = $_SESSION["idULog"]; @endphp
+											@php
+											$isLiked = false;
+											for ($n=0; $n < count($arrayLikes); $n++) {
+												$elemAux = $arrayLikes[$n];
+												if ($idULog == $elemAux->idUsuario && $noticiaComplete->idNoticia == $elemAux->idNoticia) {
+													$isLiked = true;
+												}
+											}
+											for ($x=0; $x < count($arrayLikes); $x++) {
+												$elementoLike = $arrayLikes[$x];
+												if ($idULog == $elementoLike->idUsuario && $noticiaComplete->idNoticia == $elementoLike->idNoticia) { @endphp
+												<form action="like_delete_success.php" method="POST" >
+													<input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
+													<input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
+													<input type="submit" id="btnLiked" value="Te gusta"/>
+												</form>
+												@php 
+												break; } else if ($idULog == $elementoLike->idUsuario && $noticiaComplete->idNoticia != $elementoLike->idNoticia) { @endphp
+												<form action="like_insert_success.php" method="POST">
+													<input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
+													<input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
+													<input type="submit" id="btnLike" value="¡ME GUSTA!"/>
+												</form>
+												@php
+											} else if ($idULog != $elementoLike->idUsuario && $noticiaComplete->idNoticia == $elementoLike->idNoticia) {
+												if (!$isLiked) { @endphp
+												<form action="like_insert_success.php" method="POST">
+													<input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
+													<input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
+													<input type="submit" id="btnLike" value="¡ME GUSTA!"/>
+												</form>
+												@php } else { @endphp
+												@php } 
+											}
 										}
-										slides[slideIndex-1].style.display = "block"; 
-										dots[slideIndex-1].className += " active";
-									}
-								</script>
+									} @endphp -->

@@ -18,11 +18,16 @@ Route::get('params/{param}', function($param) {
 	return "El parametro es ".$param;
 });
 
-Route::get('/', 'ControllerDV@index');
+Route::get('/{idSecc?}', 'ControllerDV@index');
+Route::get('registro', ['as' => 'registro', 'uses' => 'ControllerDV@registro']);
+Route::get('perfil/{id}', ['as' => 'perfil', 'uses' => 'ControllerDV@perfil']);
+Route::get('noticia/{id}', ['as' => 'noticia', 'uses' => 'ControllerDV@detalle']);
+Route::get('editar/{id}', ['as' => 'editar', 'uses' => 'ControllerDV@editarNoticia']);
+Route::get('noticias/{id}/{tipo}', ['as' => 'noticias', 'uses' => 'ControllerDV@listadonoticias']);
+Route::get('busqueda/{id}', ['as' => 'busqueda', 'uses' => 'ControllerDV@listadobusqueda']);
+Route::get('busquedafecha/{id}', ['as' => 'busquedafecha', 'uses' => 'ControllerDV@listadobusquedafecha']);
+Route::post('login', ['as' => 'login', 'uses' => 'ControllerDV@successLogin']);
 Route::get('header', 'ControllerDV@header');
 Route::get('footer', 'ControllerDV@footer');
-Route::get('registro', 'ControllerDV@registro');
 Route::get('panel', 'ControllerDV@panel');
-Route::get('detalle', 'ControllerDV@detalle');
-Route::get('editar/{id}', 'ControllerDV@editarNoticia');
-Route::post('login', ['as' => 'login', 'uses' => 'ControllerDV@successLogin']);
+?>

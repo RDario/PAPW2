@@ -1,81 +1,4 @@
 @php
-include "conexionBD.php";
-require_once "DVNoticia.php";
-require_once "DVMultimedia.php";
-require_once "DVSeccion.php";
-require_once "DVLike.php";
-$connection = conectarBD();
-mysqli_more_results($connection);
-if (isset($_GET['idSec'])) {
-    $idSecccion = (int) $_GET['idSec'];
-    $chainSecc = $_GET['idSec'];
-    if ($chainSecc == 'notCom') {
-        $querySelect = "CALL obtenerNoticiasConMasComens();";
-    } else if ($chainSecc == 'notLik') {
-        $querySelect = "CALL obtenerNoticiasConMasLikes()";
-    } else {
-        $querySelect = "CALL obtenerNoticiasBySeccion('$idSecccion')";
-    }
-    $resultQuery = mysqli_query($connection, $querySelect) or die (mysqli_error($connection));
-    if ($resultQuery->num_rows) {
-        $rows = $resultQuery->fetch_all(MYSQLI_ASSOC);
-        $arrayNoticias = array();
-        foreach ($rows as $row) {
-            $arrayNoticias[count($arrayNoticias)] = new DVNoticia(
-                $row['idNoticia'],
-                $row['titulo'],
-                $row['descripcion'],
-                $row['seccion'],
-                $row['idSeccion'],
-                $row['FechaReciente'],
-                '',
-                $row['autor'],
-                '',
-                '',
-                $row['isEspecial'],
-                $row['cintillo']);
-        }
-    }
-    mysqli_next_result($connection);
-} else {
-    $querySelect = "SELECT idNoticia, titulo, descripcion, idSeccion, seccion, autor, FechaReciente, isEspecial, cintillo FROM ultimasnoticiasvalidadas;";
-    $resultQuery = mysqli_query($connection, $querySelect) or die (mysqli_error($connection));
-    if ($resultQuery->num_rows) {
-        $rows = $resultQuery->fetch_all(MYSQLI_ASSOC);
-        $arrayNoticias = array();
-        foreach ($rows as $row) {
-            $arrayNoticias[count($arrayNoticias)] = new DVNoticia(
-                $row['idNoticia'],
-                $row['titulo'],
-                $row['descripcion'],
-                $row['seccion'],
-                $row['idSeccion'],
-                $row['FechaReciente'],
-                '',
-                $row['autor'],
-                '',
-                '',
-                $row['isEspecial'],
-                $row['cintillo']);
-        }
-    }
-}
-mysqli_more_results($connection);
-
-$querySeccion = "SELECT idSeccion, nombreSeccion FROM allseccionesconnoticias;";
-$result = mysqli_query($connection, $querySeccion) or die (mysqli_error($connection));
-
-$arraySecciones = array();
-if ($result->num_rows) {
-    $rows = $result->fetch_all(MYSQLI_ASSOC);
-    foreach ($rows as $row) {
-        $arraySecciones[count($arraySecciones)] = new DVSeccion(
-            $row['idSeccion'],
-            $row['nombreSeccion'],
-            '');
-    }
-}
-
 $arrayDias = array(
     1=>"01",
     2=> "02",
@@ -150,235 +73,152 @@ $arrayAnio = array(
             <div class="mag-inner">
                 <div class="divHeaderNews">
                     <ul class="listaNewsHorizontal">
-                        @php
-                        for ($i=0; $i < count($arrayNoticias); $i++) {
-                            $element = $arrayNoticias[$i];
-                            if ($element->isEspecial == '1') {
-                                @endphp
-                                <li>
-                                    <div class="divNotiHeader">
-                                        @php
-                                        $idNot = (int) $element->idNoticia;
-                                        $queryHeader = "CALL obtenerMultimediaById('$idNot')";
-                                        $QueryAlt = mysqli_query($connection, $queryHeader) or die (mysqli_error($connection)); 
-                                        mysqli_next_result($connection);
-                                        if ($QueryAlt->num_rows) {
-                                            $arrayImg = array();
-                                            $rows = $QueryAlt->fetch_all(MYSQLI_ASSOC);
-                                            foreach ($rows as $row) {
-                                                if ($row['urlMedia'] != NULL && $row['urlMedia'] != "" && $row['tipoMedia'] == "IMG") {
-                                                    $arrayImg[count($arrayImg)] = new DVMultimedia(
-                                                        $row['idMultimedia'], 
-                                                        $row['idNoticia'],
-                                                        $row['urlMedia'],
-                                                        $row['tipoMedia']);
-                                                }
-                                            }
-                                            if (count($arrayImg > 0)) {
-                                                    @endphp
-                                                    <img  src="@php echo 'images/'.$arrayImg[0]->urlMedia; @endphp" />
-                                                    @php
-                                                }
-                                            } @endphp
-                                            <a href="noticiaDetalle.php?id=@php echo $element->idNoticia; @endphp">@php echo $element->titulo; @endphp</a>
-                                            <br>
-                                            <a href="noticiaDetalle.php?id=@php echo $element->idNoticia; @endphp" style="color: #fff; background-color: #ee5656; padding: 3px">@php echo $element->cintillo; @endphp</a>
-                                        </div>
-                                    </li>
+                       @if (isset($dataNotis))
+                       @foreach ($dataNotis as $noti)
+                       @if($noti->isEspecial == 1)
+                       <li>
+                        <div class="divNotiHeader">
+                           <img  src="images/{{ $noti->imgNoti }}" />
+                           <a href="noticia/{{ $noti->idNoticia }}">{{ $noti->titulo }}</a>
+                           <a href="noticia/{{ $noti->idNoticia }}" style="color: #fff; background-color: #ee5656; padding: 3px">Leer más</a>
+                       </div>
+                   </li>
+                   @endif
+                   @endforeach
+                   @endif
+               </ul>
+           </div>
+
+           <div class="col-md-8 mag-innert-left" style="background-color: #f8f8f8;">
+            <a class="linkOrderNews"><a href="notCom">Noticias con más comentarios</a>
+            <a class="linkOrderNews"><a href="notLik">Noticias con más likes</a>
+
+            @if (isset($dataNotis))
+            @foreach ($dataNotis as $noti)
+            @if($noti->isEspecial != 1)
+            <div class="divSeccion">
+                <h2 class="tituloSeccion">{{ $noti->seccion }}</h2>
+            </div>
+            <div class="divNoticia">
+                @if($noti->imgNoti != "")
+                <img style="width: 400px; height: 380px" class="imgNoticia" src="images/{{ $noti->imgNoti }}" />
+                @else
+                <img class="imgNoticia" src="images/placeholder.png" alt="" />
+                @endif
+                <span style="float: right; padding-left: 5px; color: #428bca;"># Likes</span>
+                @if(Session::has('idULog'))
+                {{-- HACER DESMADRE DE LIKES AQUI --}}
+                @endif
+                <div class="datosNoticia">
+                    <span class="txtTitulo">{{ $noti->titulo }}</span>
+                    <p class="txtDescripcion">{{ $noti->descripcion }}</p>
+                    <p class="txtCredito">Publicado por: {{ $noti->autor }}</p>
+                    <span class="txtFecha">Fecha: {{ $noti->fechaReciente }}</span>
+                    <a class="leerMas" href="noticia/{{ $noti->idNoticia }}">LEER MÁS</a>
+                </div>
+            </div>
+            @endif
+            @endforeach
+            @endif
+        </div>
+
+        <div class="col-md-4 mag-inner-right">
+            <div class="sign_main" style="background-color: #f8f8f8;">
+                <h4 class="side">Secciones</h4>
+                <ul>
+                    @if(isset($dataSeccs))
+                    @foreach($dataSeccs as $secc)
+                    <li>
+                        <a href="/{{ $secc->idSeccion }}">{{ $secc->nombreSeccion }}</a>
+                    </li>
+                    @endforeach
+                    @endif
+                    </ul>
+                </div>    
+            </div>
+
+            <div class="col-md-4 mag-inner-right">
+                <div class="sign_main" style="background-color: #f8f8f8;">
+                    <h4 class="side">Búsqueda</h4>
+                    <div class="sign_up">
+                        <form method="GET" action="listadoBusqueda.php">
+                            <input type="text" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
+                            <input type="submit" value="Buscar">
+                        </form>
+                    </div>
+                    <div class="sign_up">
+                        <span>Búsqueda por fecha</span>
+                        <form method="POST" action="listadoBusquedaFecha.php">
+                            <div class="address">
+                                <span>Del día</span>
+                                <select class="selectFecha" id="inpNacDia" name="txtDiaFrom" placeholder="">
                                     @php
-                                }
+                                    foreach($arrayDias as $key => $value) {
+                                        echo "<option value=' $value '> $value </option>";
+                                    } @endphp
+                                </select>
+                                <select class="selectFecha" id="inpNacMes" name="txtMesFrom" placeholder="">
+                                   @php
+                                   foreach($arrayMes as $key => $value) {
+                                    echo "<option value=' $value '> $key </option>";
+                                } @endphp
+                            </select>
+                            <select class="selectFecha" id="inpNacAnio" name="txtAnioFrom" placeholder="">
+                               @php
+                               foreach($arrayAnio as $key => $value) {
+                                echo "<option value=' $value '> $value </option>";
                             } @endphp
-                        </ul>
+                        </select>
                     </div>
+                    <div class="address">
+                        <span>Al día</span>
+                        <select class="selectFecha" id="inpNacDia" name="txtDiaTo" placeholder="">
+                            @php
+                            foreach($arrayDias as $key => $value) {
+                                echo "<option value=' $value '> $value </option>";
+                            } @endphp
+                        </select>
+                        <select class="selectFecha" id="inpNacMes" name="txtMesTo" placeholder="">
+                           @php
+                           foreach($arrayMes as $key => $value) {
+                            echo "<option value=' $value '> $key </option>";
+                        } @endphp
+                    </select>
+                    <select class="selectFecha" id="inpNacAnio" name="txtAnioTo" placeholder="">
+                       @php
+                       foreach($arrayAnio as $key => $value) {
+                        echo "<option value=' $value '> $value </option>";
+                    } @endphp
+                </select>
+            </div>
+            <input type="submit" value="Buscar">
+        </form>
+    </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+@include('footer')
 
-                    <div class="col-md-8 mag-innert-left" style="background-color: #f8f8f8;">
-                        <a class="linkOrderNews"><a href="index.php?idSec=notCom">Noticias con más comentarios</a>
-                        <a class="linkOrderNews"><a href="index.php?idSec=notLik">Noticias con más likes</a>
-                        @php
-                        for ($i=0; $i < count($arrayNoticias); $i++) {
-                            $elemento = $arrayNoticias[$i];
-                            if ($elemento->isEspecial != 1) {
-                                @endphp
-                                <div class="divSeccion">
-                                    <h2 class="tituloSeccion"><@php echo $elemento->seccion; @endphp</h2>
-                                </div>
-                                <div class="divNoticia">
+{{--  <form action="like_delete_success.php" method="POST" style="float: right;">
+                                        <input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
+                                        <input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
+                                        <input type="submit" id="btnLiked" value="Te gusta"/>
+                                    </form>
                                     @php
-                                    $idNoti = (int) $elemento->idNoticia;
-                                    $queryMultimedia = "CALL obtenerMultimediaById('$idNoti')";
-                                    $Query = mysqli_query($connection, $queryMultimedia) or die (mysqli_error($connection)); 
-                                    mysqli_next_result($connection);
-                                    if ($Query->num_rows) {
-                                        $arrayMediaImg = array();
-                                        $rows = $Query->fetch_all(MYSQLI_ASSOC);
-                                        foreach ($rows as $row) {
-                                            if ($row['urlMedia'] != NULL && $row['urlMedia'] != "" && $row['tipoMedia'] == "IMG") {
-                                                $arrayMediaImg[count($arrayMediaImg)] = new DVMultimedia(
-                                                    $row['idMultimedia'],
-                                                    $row['idNoticia'],
-                                                    $row['urlMedia'],
-                                                    $row['tipoMedia']); ?>
-                                                <?php }
-                                            }
-                                            if (count($arrayMediaImg > 0)) {
-                                                @endphp
-                                                <img style="width: 400px; height: 380px" class="imgNoticia" src="@php echo 'images/'.$arrayMediaImg[0]->urlMedia; @endphp" />
-                                                @php
-                                            }
-                                        } else {
-                                            @endphp
-                                            <img class="imgNoticia" src="images/placeholder.png" alt="" />
-                                            @php
-                                        }
-                                        $queryLike = "CALL obtenerLikesByNoti('$idNoti')";
-                                        $Queryke = mysqli_query($connection, $queryLike) or die (mysqli_error($connection)); 
-                                        mysqli_next_result($connection);
-                                        if ($Queryke->num_rows) {
-                                            $arrayLikes = array();
-                                            $rows = $Queryke->fetch_all(MYSQLI_ASSOC);
-                                            foreach ($rows as $row) {
-                                                $arrayLikes[count($arrayLikes)] = new DVLike(
-                                                    $row['idLike'], 
-                                                    $row['idNoticia'],
-                                                    $row['idUsuario']);
-                                            }
-                                            @endphp
-                                            <span style="float: right; padding-left: 5px; color: #428bca;">
-                                                @php 
-                                            echo count($arrayLikes); @endphp Likes</span>
-                                            @php } else { @endphp
-                                            <span style="float: right; padding-left: 5px; color: #428bca; position: relative;">0 Likes</span>
-                                            @php } @endphp
+                                    break; } else if ($idULog == $elementoLike->idUsuario && $elemento->idNoticia != $elementoLike->idNoticia) {
+                                        @endphp
+                                        <form action="like_insert_success.php" method="POST" style="float: right">
+                                            <input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
+                                            <input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
+                                            <input type="submit" id="btnLike" value="¡ME GUSTA!"/>
+                                        </form>
 
-                                            @php
-                                            if (isset($_SESSION["idULog"])) {
-                                                $idULog = $_SESSION["idULog"];
-                                                $isLiked = false;
-                                                for ($n=0; $n < count($arrayLikes); $n++) {
-                                                    $elemAux = $arrayLikes[$n];
-                                                    if ($idULog == $elemAux->idUsuario && $elemento->idNoticia == $elemAux->idNoticia) {
-                                                        $isLiked = true;
-                                                    }
-                                                }
-                                                for ($x=0; $x < count($arrayLikes); $x++) {
-                                                    $elementoLike = $arrayLikes[$x];
-                                                    if ($idULog == $elementoLike->idUsuario && $elemento->idNoticia == $elementoLike->idNoticia) {
-                                                        @endphp
-
-                                                        <form action="like_delete_success.php" method="POST" style="float: right;">
-                                                            <input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
-                                                            <input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
-                                                            <input type="submit" id="btnLiked" value="Te gusta"/>
-                                                        </form>
-                                                        @php
-                                                        break; } else if ($idULog == $elementoLike->idUsuario && $elemento->idNoticia != $elementoLike->idNoticia) {
-                                                            @endphp
-                                                            <form action="like_insert_success.php" method="POST" style="float: right">
-                                                                <input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
-                                                                <input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
-                                                                <input type="submit" id="btnLike" value="¡ME GUSTA!"/>
-                                                            </form>
-
-                                                            @php 
-                                                        } else if ($idULog != $elementoLike->idUsuario && $elemento->idNoticia == $elementoLike->idNoticia) {
-                                                            if (!$isLiked) { @endphp
-                                                            <form action="like_insert_success.php" method="POST" style="float: right">
-                                                                <input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
-                                                                <input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
-                                                                <input type="submit" id="btnLike" value="¡ME GUSTA!"/>
-                                                            </form>
-                                                            @php break; } else { @endphp
-                                                            @php } } @endphp
-                                                            @php }
-                                                        } @endphp
-                                                        <div class="datosNoticia">
-                                                            <span class="txtTitulo">@php echo $elemento->titulo; @endphp</span>
-                                                            <p class="txtDescripcion">@php echo $elemento->descripcion; @endphp</p>
-                                                            <p class="txtCredito">Publicado por: @php echo $elemento->autor; @endphp</p>
-                                                            <span class="txtFecha">Fecha: @php echo $elemento->fecha; @endphp</span>
-                                                            <a class="leerMas" href="noticiaDetalle.php?id=@php echo $elemento->idNoticia; @endphp">LEER MÁS</a>
-                                                        </div>
-                                                    </div>
-                                                    @php } 
-                                                }
-                                                mysqli_close($connection); @endphp
-                                            </div>
-
-                                            <div class="col-md-4 mag-inner-right">
-                                                <div class="sign_main" style="background-color: #f8f8f8;">
-                                                    <h4 class="side">Secciones</h4>
-                                                    <ul>
-                                                        @php
-                                                        if (count($arraySecciones) > 0) {
-                                                            for ($i=0; $i < count($arraySecciones); $i++) { 
-                                                                $elemento = $arraySecciones[$i]; @endphp
-                                                                <li><a href="index.php?idSec=@php echo $elemento->idSeccion; @endphp">@php echo $elemento->nombreSeccion; @endphp</a></li>
-                                                                @php }
-                                                            } @endphp
-                                                        </ul>
-                                                    </div>    
-                                                </div>
-
-                                                <div class="col-md-4 mag-inner-right">
-                                                    <div class="sign_main" style="background-color: #f8f8f8;">
-                                                        <h4 class="side">Búsqueda</h4>
-                                                        <div class="sign_up">
-                                                            <form method="GET" action="listadoBusqueda.php">
-                                                                <input type="text" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
-                                                                <input type="submit" value="Buscar">
-                                                            </form>
-                                                        </div>
-                                                        <div class="sign_up">
-                                                            <span>Búsqueda por fecha</span>
-                                                            <form method="POST" action="listadoBusquedaFecha.php">
-                                                                <div class="address">
-                                                                    <span>Del día</span>
-                                                                    <select class="selectFecha" id="inpNacDia" name="txtDiaFrom" placeholder="">
-                                                                        @php
-                                                                        foreach($arrayDias as $key => $value) {
-                                                                            echo "<option value=' $value '> $value </option>";
-                                                                        } @endphp
-                                                                    </select>
-                                                                    <select class="selectFecha" id="inpNacMes" name="txtMesFrom" placeholder="">
-                                                                       @php
-                                                                       foreach($arrayMes as $key => $value) {
-                                                                        echo "<option value=' $value '> $key </option>";
-                                                                    } @endphp
-                                                                </select>
-                                                                <select class="selectFecha" id="inpNacAnio" name="txtAnioFrom" placeholder="">
-                                                                   @php
-                                                                   foreach($arrayAnio as $key => $value) {
-                                                                    echo "<option value=' $value '> $value </option>";
-                                                                } @endphp
-                                                            </select>
-                                                        </div>
-                                                        <div class="address">
-                                                            <span>Al día</span>
-                                                            <select class="selectFecha" id="inpNacDia" name="txtDiaTo" placeholder="">
-                                                                @php
-                                                                foreach($arrayDias as $key => $value) {
-                                                                    echo "<option value=' $value '> $value </option>";
-                                                                } @endphp
-                                                            </select>
-                                                            <select class="selectFecha" id="inpNacMes" name="txtMesTo" placeholder="">
-                                                               @php
-                                                               foreach($arrayMes as $key => $value) {
-                                                                echo "<option value=' $value '> $key </option>";
-                                                            } @endphp
-                                                        </select>
-                                                        <select class="selectFecha" id="inpNacAnio" name="txtAnioTo" placeholder="">
-                                                           @php
-                                                           foreach($arrayAnio as $key => $value) {
-                                                            echo "<option value=' $value '> $value </option>";
-                                                        } @endphp
-                                                    </select>
-                                                </div>
-                                                <input type="submit" value="Buscar">
-                                            </form>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    @include('footer')
+                                        @php 
+                                    } else if ($idULog != $elementoLike->idUsuario && $elemento->idNoticia == $elementoLike->idNoticia) {
+                                        if (!$isLiked) { @endphp
+                                        <form action="like_insert_success.php" method="POST" style="float: right">
+                                            <input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
+                                            <input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>
+                                            <input type="submit" id="btnLike" value="¡ME GUSTA!"/> --}}

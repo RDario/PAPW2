@@ -1,5 +1,4 @@
 @php
-SESSION_START();
 error_reporting(0);
 @endphp
 
@@ -27,42 +26,28 @@ error_reporting(0);
                     </div>
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav">
-                            @php
-                            if (isset($_SESSION["tipoULog"])) {
-                                $idUser = $_SESSION['idULog'];
-                                $tipoUser = $_SESSION["tipoULog"];
-                                if (strcmp($tipoUser, "Administrador") == 0 || strcmp($tipoUser, "Reportero") == 0) {
-                                    @endphp
-                                    <li><a href="panelNoticia.php">Subir noticia</a></li>
-                                    <li><a href="listadoNoticias.php?id=<?php echo $idUser;?>&tipo=<?php echo $tipoUser;?>">Noticias sin publicar</a></li>
-                                    @php
-                                }
-                            } @endphp
+                            @if(Session::has('idULog'))
+                            <li>
+                                <a href="panelNoticia">Subir noticia</a>
+                            </li>
+                            <li>
+                                <a href="noticias/{{ Session::get('idULog') }}/{{ Session::get('tipoULog') }}">Noticias sin publicar</a>
+                            </li>
+                            @endif
                         </ul>
                         <div id="divCuadroPerfil">
                             <span id="txtCuadroPerfil">
-                                @php
-                                if (isset($_SESSION["nombreULog"])) {
-                                    $nomUser = $_SESSION['nombreULog'];
-                                    @endphp
-                                    <a id="txtCuadroPerfil" href="perfil.php?id=<?php echo $idUser;?>">Hola @php echo "$nomUser"; @endphp
-                                        <a/>
-                                        @php
-                                        if (isset($_SESSION['imgAvatarULog'])) {
-                                            $imgAvatarLog = $_SESSION['imgAvatarULog'];
-                                            @endphp
-                                            <img id="imgCuadroPerfil" src="<?php echo 'images/profile/'.$imgAvatarLog; ?>" style="width: 50px; height: 50px;" >
-                                            @php
-                                        } else {
-                                         @endphp
-                                         <img id="imgCuadroPerfil" src="images/avatar.jpg" style="width: 50px; height: 50px;" >
-                                         @php } @endphp
-
-                                         <a id="txtDeslog" href="" onclick="">Cerrar sesión<a/>
-                                            @php
-                                        } else {
-                                           print_r('<a href="registro">Inicia sesión aquí<a/>');
-                                       } @endphp
+                               @if(Session::has('nombreULog'))
+                               <a id="txtCuadroPerfil" href="{{ route('perfil') }}/{{ Session::get('idULog') }}">Hola {{ Session::get('nombreULog') }}<a/>
+                                <a id="txtDeslog" href="" onclick="">Cerrar sesión<a/>
+                                   @if(Session::has('imgAvatarULog'))
+                                   <img id="imgCuadroPerfil" src="images/profile/{{ Session::get('imgAvatarULog') }}" style="width: 50px; height: 50px;" >
+                                   @else
+                                   <img id="imgCuadroPerfil" src="images/avatar.jpg" style="width: 50px; height: 50px;" >
+                                   @endif
+                                   @else
+                                   <a href="{{ route('registro') }}">Inicia sesión aquí<a/>
+                                       @endif
                                    </span>
                                </div>
                            </div>
