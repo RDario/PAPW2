@@ -78,13 +78,16 @@ $arrayAnio = array(
 							@foreach ($dataMulti as $multi)
 							<div class="mySlides">
 								@if($multi->tipoMedia == 'IMG')
-								<img src="images/{{ $multi->urlMedia }}" style="width:100%">
+								@if($multi->urlMedia != null)
+								<img src="{{ asset('images/'.$multi->urlMedia) }}" style="width:100%">
+								@endif
 								@elseif($multi->tipoMedia == 'VID')
+								@if($multi->urlMedia != null)
 								<video width="100%" height="320" controls>
-									<source src="videos/{{ $multi->urlMedia }}" type="video/mp4">
+									<source src="{{ asset('videos/'.$multi->urlMedia) }}" type="video/mp4">
 									</video>
-									@endif
-									@endif
+								@endif
+								@endif
 								</div>
 								@endforeach
 								@endif
@@ -100,15 +103,15 @@ $arrayAnio = array(
 							</div>
 							@if(isset($dataNoti))
 							@foreach($dataNoti as $noti))
-							<h2>{{ $noti->titulo }}</h2>
-							<h4>{{ $noti->descripcion }}</h4>
-							<p class="textcComplete">{{ $noti->textoCompleto }}</p>
+							<h2>{{ utf8_decode($noti->titulo) }}</h2>
+							<h4>{{ utf8_decode($noti->descripcion) }}</h4>
+							<p class="textoComplete">{{ utf8_decode($noti->texto) }}</p>
 							<div class="single-bottom">
 								@php 
-								$datePubli = new DateTime($noticiaComplete->fecha);
+								$datePubli = new DateTime($noti->fecha);
 								@endphp
 								<ul>
-									<li><span>Reportero:</span> <a href="perfil/{{ $noti->idUsuario }}">{{ $noti->autor }}</a></li>
+									<li><span>Reportero:</span> <a href="{{ route('perfil',$noti->idUsuario) }}">{{ utf8_decode($noti->autor) }}</a></li>
 									<li><span>Fecha de publicacion </span>{{ $datePubli->format('H:i:s')." del día ".$datePubli->format('d-m-Y') }}</li>
 									<li><span>{{ count($dataComents)." comentario(s)" }}</span>
 									</li>
@@ -124,209 +127,207 @@ $arrayAnio = array(
 						$date = new DateTime($coment->fecha);
 						@endphp
 						<div class="divCajaComentario">
-								<img class="imgComentario" src="images/profile/{{ $coment->urlMediaAvatar }}" style="width: 60px; height: 60px; float: left;">
-								<a href="perfil/{{ $coment->idUsuario }}">{{ $coment->nombreUsuario }}</a>
-								<br>
-								<p>{{ $coment->textoComentario }}</p>
-								<span>Publicado a las {{ $date->format('H:i:s')." del día ".$date->format('d-m-Y') }}</span>
-								@php
-								if (isset($_SESSION["tipoULog"])) { 
-									$tipoUserLog = $_SESSION["tipoULog"];
-									if ($tipoUserLog == 'Administrador') { @endphp
-									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
-									@php 
-								} elseif ($tipoUserLog == 'Reportero') {
-									$idUserLogFirst = $_SESSION["idULog"];
-									if ($idUserLogFirst == $noticiaComplete->idUsuario) { @endphp
-									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
-									@php }
-								} @endphp
-								@php } @endphp
-								<hr>
-							</div>
+							<img class="imgComentario" src="{{ asset('images/profile/$coment->imgAvatar') }}" style="width: 60px; height: 60px; float: left;">
+							<a href="{{ route('perfil',$coment->idUsuario) }}">{{ utf8_decode($coment->autor) }}</a>
+							<br>
+							<p>{{ utf8_decode($coment->texto) }}</p>
+							<span>Publicado a las {{ $date->format('H:i:s')." del día ".$date->format('d-m-Y') }}</span>
+
+							@if(Session::has('tipoULog'))
+							@if(Session::get('tipoULog') == 'Administrador')
+							@foreach($dataNoti as $noti))
+							<a href="comentario_delete_success.php?idComen={{ $coment->idComentario }}&idNoti={{ $noti->idNoticia }}" style="float: right; padding-right: 3px;">Eliminar</a>
+							@endforeach
+							@elseif(Session::get('tipoULog') == 'Reportero')
+							@foreach($dataNoti as $noti))
+							@if(Session::get('idULog') == $noti->idUsuario)
+							<a href="comentario_delete_success.php?idComen{{ $coment->idComentario }}&idNoti={{ $noti->idNoticia }}" style="float: right; padding-right: 3px;">Eliminar</a>
+							@endif
+							@endforeach
+							@endif
+							@endif
+							<hr>
+						</div>
 						@endforeach
 						@endif
 
-						@php
-						for ($i=0; $i < count($arrayComentarios); $i++) { 
-							$elementoComen = $arrayComentarios[$i]; 
-							$date = new DateTime($elementoComen->fecha); @endphp
-							<div class="divCajaComentario">
-								<img class="imgComentario" src="@php echo 'images/profile/'.$elementoComen->urlMediaAvatar; @endphp" style="width: 60px; height: 60px; float: left;">
-								<a href="perfil.php?id=@php echo $elementoComen->idUsuario; @endphp">@php echo $elementoComen->nombreUsuario; @endphp</a>
-								<br>
-								<p>@php echo $elementoComen->textoComentario; @endphp</p>
-								<span>Publicado a las @php 
-								echo $date->format('H:i:s')." del día ".$date->format('d-m-Y'); @endphp</span>
-								@php
-								if (isset($_SESSION["tipoULog"])) { 
-									$tipoUserLog = $_SESSION["tipoULog"];
-									if ($tipoUserLog == 'Administrador') { @endphp
-									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
-									@php 
-								} elseif ($tipoUserLog == 'Reportero') {
-									$idUserLogFirst = $_SESSION["idULog"];
-									if ($idUserLogFirst == $noticiaComplete->idUsuario) { @endphp
-									<a href="comentario_delete_success.php?idComen=@php echo $elementoComen->idComentario;@endphp&idNoti=@php echo $noticiaComplete->idNoticia; @endphp" style="float: right; padding-right: 3px;">Eliminar</a>
-									@php }
-								} @endphp
-								@php } @endphp
-								<hr>
+						<div class="leave">
+							<h4>Deja un comentario</h4>
+							<form id="commentform" method="POST" action="comentario_insert_success.php">
+								<p class="comment-form-author-name"><label for="author">Nombre</label>
+									@if(Session::has('nombreULog'))
+									<input name="txtNombreUser" type="text" size="30" required="" readOnly="" value="{{ Session::get('nombreULog') }} {{ Session::get('apellidosULog') }}">
+									@else
+									<input name="txtNombreUser" type="text" size="30" required="" placeholder="Ingresa un nombre para identificarte" value="">
+									@endif
+									<p class="comment-form-email">
+										<label class="email">Correo eléctronico</label>
+										@if(Session::has('correoULog'))
+										<input name="txtEmailUser" type="text" required="" readOnly="" value="{{ Session::get('correoULog') }}">
+										@else
+										<input name="txtEmailUser" type="text" required="" placeholder="Ingresa un correo eléctronico válido" 
+										value="" pattern="[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{1,5}">
+										@endif
+									</p>
+									<br>
+									<p class="comment-form-comment">
+										<textarea placeholder="Comenta lo que quieras!" name="txtTextoUser" requerid=""></textarea>
+									</p>
+									<div class="clearfix"></div>
+
+									@if(Session::has('idULog'))
+									<input name="txtIdUser" type="hidden" required="" value="{{ Session::get('idULog') }}">
+									@else
+									<input name="txtIdUser" type="hidden" required="" value="">
+									@endif
+									@if(isset($dataNoti))
+									@foreach($dataNoti as $noti)
+									<input name="txtIdNoticia" type="hidden" value="{{ $noti->idNoticia }}" required="">
+									@endforeach
+									@endif
+									<input name="txtIdCommentPapa" type="hidden" value="0" required="">
+									<p class="form-submit">
+										<input type="submit" value="Enviar">
+									</p>
+									<div class="clearfix"></div>
+								</form>
 							</div>
-							<hr>
-							@php } @endphp
-							<div class="leave">
-								<h4>Deja un comentario</h4>
-								<form id="commentform" method="POST" action="comentario_insert_success.php">
-									<p class="comment-form-author-name"><label for="author">Nombre</label>
-										@php
-										if (isset($_SESSION["nombreULog"])) {
-											$nomUserLog = $_SESSION["nombreULog"]." ".$_SESSION['apellidosULog']; @endphp
-											<input name="txtNombreUser" type="text" size="30" required="" readOnly="" value="@php echo $nomUserLog; @endphp">
-											@php } else { @endphp
-											<input name="txtNombreUser" type="text" size="30" required="" placeholder="Ingresa un nombre para identificarte" value="">
-											@php } @endphp
-										</p>
-										<p class="comment-form-email">
-											<label class="email">Correo eléctronico</label>
-											@php
-											if (isset($_SESSION["correoULog"])) {
-												$emailUserLog = $_SESSION["correoULog"]; @endphp
-												<input name="txtEmailUser" type="text" required="" readOnly="" value="@php echo $emailUserLog; @endphp">
-												@php } else { @endphp
-												<input name="txtEmailUser" type="text" required="" placeholder="Ingresa un correo eléctronico válido" 
-												value="" pattern="[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{1,5}">
-												@php } @endphp
-											</p>
-											<br>
-											<p class="comment-form-comment">
-												<textarea placeholder="Comenta lo que quieras!" name="txtTextoUser" requerid=""></textarea>
-											</p>
-											<div class="clearfix"></div>
-											@php
-											if (isset($_SESSION["idULog"])) {
-												$idUserLog = $_SESSION["idULog"]; @endphp
-												<input name="txtIdUser" type="hidden" required="" value="@php echo $idUserLog;@endphp">
-												@php } else { @endphp
-												<input name="txtIdUser" type="hidden" required="" value="">
-												@php } @endphp
-												<input name="txtIdNoticia" type="hidden" value="@php echo $noticiaComplete->idNoticia; @endphp" required="">
-												<input name="txtIdCommentPapa" type="hidden" value="0" required="">
-												<p class="form-submit">
-													<input type="submit" value="Enviar">
-												</p>
-												<div class="clearfix"></div>
-											</form>
-										</div>
-									</div>
+						</div>
 
-									<div class="col-md-4 mag-inner-right">
-										<div class="sign_main" style="background-color: #f8f8f8;">
-											<h4 class="side">Secciones</h4>
-											<ul>
+						<div class="col-md-4 mag-inner-right">
+							<div class="sign_main" style="background-color: #f8f8f8;">
+								<h4 class="side">Secciones</h4>
+								<ul>
+									@if(isset($dataSeccs))
+									@foreach($dataSeccs as $secc)
+									<li><a href="/{{ $secc->idSeccion }}">{{ utf8_decode($secc->nombreSeccion) }}</a></li>
+									@endforeach
+									@endif
+								</ul>
+							</div>    
+						</div>
+
+						<div class="col-md-4 mag-inner-right">
+							<div class="sign_main" style="background-color: #f8f8f8;">
+								<h4 class="side">Búsqueda</h4>
+								<div class="sign_up">
+									<form class="form-busqueda" method="GET" action="">
+										<input type="text" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
+										<input type="submit" value="Buscar">
+									</form>
+								</div>
+								<div class="sign_up">
+									<span>Búsqueda por fecha</span>
+									<form class="form-busqueda" method="POST" action="">
+										<div class="address">
+											<span>Del día</span>
+											<select class="selectFecha" id="inpDiaFrom" name="txtDiaFrom" placeholder="">
 												@php
-												if (count($arraySecciones) > 0) {
-													for ($i=0; $i < count($arraySecciones); $i++) { 
-														$elemento = $arraySecciones[$i]; @endphp
-														<li><a href="index.php?idSec=@php echo $elemento->idSeccion; @endphp">@php echo $elemento->nombreSeccion; @endphp</a></li>
-														@php }
-													} @endphp
-												</ul>
-											</div>    
+												foreach($arrayDias as $key => $value) {
+													echo "<option value=' $value '> $value </option>";
+												} @endphp
+											</select>
+											<select class="selectFecha" id="inpMesFrom" name="txtMesFrom" placeholder="">
+												@php
+												foreach($arrayMes as $key => $value) {
+													echo "<option value=' $value '> $key </option>";
+												} @endphp
+											</select>
+											<select class="selectFecha" id="inpAnioFrom" name="txtAnioFrom" placeholder="">
+												@php
+												foreach($arrayAnio as $key => $value) {
+													echo "<option value=' $value '> $value </option>";
+												} @endphp
+											</select>
 										</div>
-
-										<div class="col-md-4 mag-inner-right">
-											<div class="sign_main" style="background-color: #f8f8f8;">
-												<h4 class="side">Búsqueda</h4>
-												<div class="sign_up">
-													<form method="GET" action="listadoBusqueda.php">
-														<input type="text" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
-														<input type="submit" value="Buscar">
-													</form>
-												</div>
-												<div class="sign_up">
-													<span>Búsqueda por fecha</span>
-													<form method="POST" action="listadoBusquedaFecha.php">
-														<div class="address">
-															<span>Del día</span>
-															<select class="selectFecha" id="inpNacDia" name="txtDiaFrom" placeholder="">
-																@php
-																foreach($arrayDias as $key => $value) {
-																	echo "<option value=' $value '> $value </option>";
-																} @endphp
-															</select>
-															<select class="selectFecha" id="inpNacMes" name="txtMesFrom" placeholder="">
-																@php
-																foreach($arrayMes as $key => $value) {
-																	echo "<option value=' $value '> $key </option>";
-																} @endphp
-															</select>
-															<select class="selectFecha" id="inpNacAnio" name="txtAnioFrom" placeholder="">
-																@php
-																foreach($arrayAnio as $key => $value) {
-																	echo "<option value=' $value '> $value </option>";
-																} @endphp
-															</select>
-														</div>
-														<div class="address">
-															<span>Al día</span>
-															<select class="selectFecha" id="inpNacDia" name="txtDiaTo" placeholder="">
-																@php
-																foreach($arrayDias as $key => $value) {
-																	echo "<option value=' $value '> $value </option>";
-																} @endphp
-															</select>
-															<select class="selectFecha" id="inpNacMes" name="txtMesTo" placeholder="">
-																@php
-																foreach($arrayMes as $key => $value) {
-																	echo "<option value=' $value '> $key </option>";
-																} @endphp
-															</select>
-															<select class="selectFecha" id="inpNacAnio" name="txtAnioTo" placeholder="">
-																@php
-																foreach($arrayAnio as $key => $value) {
-																	echo "<option value=' $value '> $value </option>";
-																} @endphp
-															</select>
-														</div>
-														<input type="submit" value="Buscar">
-													</form>
-												</div>
-											</div>
+										<div class="address">
+											<span>Al día</span>
+											<select class="selectFecha" id="inpDiaTo" name="txtDiaTo" placeholder="">
+												@php
+												foreach($arrayDias as $key => $value) {
+													echo "<option value=' $value '> $value </option>";
+												} @endphp
+											</select>
+											<select class="selectFecha" id="inpMesTo" name="txtMesTo" placeholder="">
+												@php
+												foreach($arrayMes as $key => $value) {
+													echo "<option value=' $value '> $key </option>";
+												} @endphp
+											</select>
+											<select class="selectFecha" id="inpAnioTo" name="txtAnioTo" placeholder="">
+												@php
+												foreach($arrayAnio as $key => $value) {
+													echo "<option value=' $value '> $value </option>";
+												} @endphp
+											</select>
 										</div>
-									</div>
+										<input id="inp-buscar-fecha" type="submit" value="Buscar">
+									</form>
 								</div>
 							</div>
-							@include('footer')
+						</div>
+					</div>
+				</div>
+			</div>
+			@include('footer')
 
-							<script type="text/javascript">
-								var slideIndex = 1;
-								showSlides(slideIndex);
+			<script type="text/javascript">
+				$(document).ready(function(){
+					$('.form-busqueda').submit(function(event){
+						return false;
+					});
 
-								function plusSlides(n) {
-									showSlides(slideIndex += n);
-								}
+					$('#inp-buscar-simple').click(function(){
+						var keywords = $('#inp-text-busqueda').val();
+						if (keywords != ''){
+							$(location).attr('href', 'busqueda/'+keywords);
+						} else {
+							alert("Ingresa un dato válido en el campo de búsqueda");
+						}
+					});
 
-								function currentSlide(n) {
-									showSlides(slideIndex = n);
-								}
+					$('#inp-buscar-fecha').click(function(){
+						var diaFrom = $('#inpDiaFrom').val();
+						var mesFrom = $('#inpMesFrom').val();
+						var anioFrom = $('#inpAnioFrom').val();
+						var anioTo = $('#inpAnioTo').val();
+						var mesTo = $('#inpMesTo').val();
+						var diaTo = $('#inpDiaTo').val();
+						var fechaFrom = anioFrom+"-"+mesFrom+"-"+diaFrom;
+						var fechaTo = anioTo+"-"+mesTo+"-"+diaTo;
 
-								function showSlides(n) {
-									var i;
-									var slides = document.getElementsByClassName("mySlides");
-									var dots = document.getElementsByClassName("dot");
-									if (n > slides.length) {slideIndex = 1} 
-										if (n < 1) {slideIndex = slides.length}
-											for (i = 0; i < slides.length; i++) {
-												slides[i].style.display = "none"; 
-											}
-											for (i = 0; i < dots.length; i++) {
-												dots[i].className = dots[i].className.replace(" active", "");
-											}
-											slides[slideIndex-1].style.display = "block"; 
-											dots[slideIndex-1].className += " active";
-										}
-									</script>
+						console.log("Valores-fecha---> "+fechaFrom+" _ "+fechaTo);
+						$(location).attr('href', 'busquedafecha/'+fechaFrom+'/'+fechaTo);
+					});
+				});
+
+				var slideIndex = 1;
+				showSlides(slideIndex);
+
+				function plusSlides(n) {
+					showSlides(slideIndex += n);
+				}
+
+				function currentSlide(n) {
+					showSlides(slideIndex = n);
+				}
+
+				function showSlides(n) {
+					var i;
+					var slides = document.getElementsByClassName("mySlides");
+					var dots = document.getElementsByClassName("dot");
+					if (n > slides.length) {slideIndex = 1} 
+						if (n < 1) {slideIndex = slides.length}
+							for (i = 0; i < slides.length; i++) {
+								slides[i].style.display = "none"; 
+							}
+							for (i = 0; i < dots.length; i++) {
+								dots[i].className = dots[i].className.replace(" active", "");
+							}
+							slides[slideIndex-1].style.display = "block"; 
+							dots[slideIndex-1].className += " active";
+						}
+					</script>
 
 
 									<!-- DESMADRE DE LIKES

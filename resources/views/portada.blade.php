@@ -45,6 +45,7 @@ $arrayMes = array(
     'noviembre'=> "11",
     'diciembre'=> "12");
 $arrayAnio = array(
+    0=>"2018",
     1=>"2017",
     2=> "2016",
     3=> "2015",
@@ -79,7 +80,7 @@ $arrayAnio = array(
                        <li>
                         <div class="divNotiHeader">
                            <img  src="images/{{ $noti->imgNoti }}" />
-                           <a href="noticia/{{ $noti->idNoticia }}">{{ $noti->titulo }}</a>
+                           <a href="noticia/{{ $noti->idNoticia }}">{{ utf8_decode($noti->titulo) }}</a>
                            <a href="noticia/{{ $noti->idNoticia }}" style="color: #fff; background-color: #ee5656; padding: 3px">Leer más</a>
                        </div>
                    </li>
@@ -97,7 +98,7 @@ $arrayAnio = array(
             @foreach ($dataNotis as $noti)
             @if($noti->isEspecial != 1)
             <div class="divSeccion">
-                <h2 class="tituloSeccion">{{ $noti->seccion }}</h2>
+                <h2 class="tituloSeccion">{{ utf8_decode($noti->seccion) }}</h2>
             </div>
             <div class="divNoticia">
                 @if($noti->imgNoti != "")
@@ -110,9 +111,9 @@ $arrayAnio = array(
                 {{-- HACER DESMADRE DE LIKES AQUI --}}
                 @endif
                 <div class="datosNoticia">
-                    <span class="txtTitulo">{{ $noti->titulo }}</span>
-                    <p class="txtDescripcion">{{ $noti->descripcion }}</p>
-                    <p class="txtCredito">Publicado por: {{ $noti->autor }}</p>
+                    <span class="txtTitulo">{{ utf8_decode($noti->titulo) }}</span>
+                    <p class="txtDescripcion">{{ utf8_decode($noti->descripcion) }}</p>
+                    <p class="txtCredito">Publicado por: {{ utf8_decode($noti->autor) }}</p>
                     <span class="txtFecha">Fecha: {{ $noti->fechaReciente }}</span>
                     <a class="leerMas" href="noticia/{{ $noti->idNoticia }}">LEER MÁS</a>
                 </div>
@@ -129,71 +130,71 @@ $arrayAnio = array(
                     @if(isset($dataSeccs))
                     @foreach($dataSeccs as $secc)
                     <li>
-                        <a href="/{{ $secc->idSeccion }}">{{ $secc->nombreSeccion }}</a>
+                        <a href="/{{ $secc->idSeccion }}">{{ utf8_decode($secc->nombreSeccion) }}</a>
                     </li>
                     @endforeach
                     @endif
-                    </ul>
-                </div>    
-            </div>
+                </ul>
+            </div>    
+        </div>
 
-            <div class="col-md-4 mag-inner-right">
-                <div class="sign_main" style="background-color: #f8f8f8;">
-                    <h4 class="side">Búsqueda</h4>
-                    <div class="sign_up">
-                        <form method="GET" action="listadoBusqueda.php">
-                            <input type="text" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
-                            <input type="submit" value="Buscar">
-                        </form>
-                    </div>
-                    <div class="sign_up">
-                        <span>Búsqueda por fecha</span>
-                        <form method="POST" action="listadoBusquedaFecha.php">
-                            <div class="address">
-                                <span>Del día</span>
-                                <select class="selectFecha" id="inpNacDia" name="txtDiaFrom" placeholder="">
-                                    @php
-                                    foreach($arrayDias as $key => $value) {
-                                        echo "<option value=' $value '> $value </option>";
-                                    } @endphp
-                                </select>
-                                <select class="selectFecha" id="inpNacMes" name="txtMesFrom" placeholder="">
-                                   @php
-                                   foreach($arrayMes as $key => $value) {
-                                    echo "<option value=' $value '> $key </option>";
+        <div class="col-md-4 mag-inner-right">
+            <div class="sign_main" style="background-color: #f8f8f8;">
+                <h4 class="side">Búsqueda</h4>
+                <div class="sign_up">
+                    <form class="form-busqueda" method="GET" action="">
+                        <input type="text" id="inp-text-busqueda" name="txtKeywords" class="txtBusqueda" placeholder="Ingrese palabras clave aquí">
+                        <input id="inp-buscar-simple" type="submit" value="Buscar">
+                    </form>
+                </div>
+                <div class="sign_up">
+                    <span>Búsqueda por fecha</span>
+                    <form class="form-busqueda" method="GET" action="">
+                        <div class="address">
+                            <span>Del día</span>
+                            <select class="selectFecha" id="inpDiaFrom" name="txtDiaFrom" placeholder="">
+                                @php
+                                foreach($arrayDias as $key => $value) {
+                                    echo "<option value='$value'>$value</option>";
                                 } @endphp
                             </select>
-                            <select class="selectFecha" id="inpNacAnio" name="txtAnioFrom" placeholder="">
+                            <select class="selectFecha" id="inpMesFrom" name="txtMesFrom" placeholder="">
                                @php
-                               foreach($arrayAnio as $key => $value) {
-                                echo "<option value=' $value '> $value </option>";
+                               foreach($arrayMes as $key => $value) {
+                                echo "<option value='$value'>$key</option>";
                             } @endphp
                         </select>
-                    </div>
-                    <div class="address">
-                        <span>Al día</span>
-                        <select class="selectFecha" id="inpNacDia" name="txtDiaTo" placeholder="">
-                            @php
-                            foreach($arrayDias as $key => $value) {
-                                echo "<option value=' $value '> $value </option>";
-                            } @endphp
-                        </select>
-                        <select class="selectFecha" id="inpNacMes" name="txtMesTo" placeholder="">
+                        <select class="selectFecha" id="inpAnioFrom" name="txtAnioFrom" placeholder="">
                            @php
-                           foreach($arrayMes as $key => $value) {
-                            echo "<option value=' $value '> $key </option>";
+                           foreach($arrayAnio as $key => $value) {
+                            echo "<option value='$value'>$value</option>";
                         } @endphp
                     </select>
-                    <select class="selectFecha" id="inpNacAnio" name="txtAnioTo" placeholder="">
+                </div>
+                <div class="address">
+                    <span>Al día</span>
+                    <select class="selectFecha" id="inpDiaTo" name="txtDiaTo" placeholder="">
+                        @php
+                        foreach($arrayDias as $key => $value) {
+                            echo "<option value='$value'>$value</option>";
+                        } @endphp
+                    </select>
+                    <select class="selectFecha" id="inpMesTo" name="txtMesTo" placeholder="">
                        @php
-                       foreach($arrayAnio as $key => $value) {
-                        echo "<option value=' $value '> $value </option>";
+                       foreach($arrayMes as $key => $value) {
+                        echo "<option value='$value'>$key</option>";
                     } @endphp
                 </select>
-            </div>
-            <input type="submit" value="Buscar">
-        </form>
-    </div>
+                <select class="selectFecha" id="inpAnioTo" name="txtAnioTo" placeholder="">
+                   @php
+                   foreach($arrayAnio as $key => $value) {
+                    echo "<option value='$value'>$value</option>";
+                } @endphp
+            </select>
+        </div>
+        <input id="inp-buscar-fecha" type="submit" value="Buscar">
+    </form>
+</div>
 </div>
 </div>
 </div>
@@ -201,6 +202,36 @@ $arrayAnio = array(
 </div>
 @include('footer')
 
+<script>
+ $(document).ready(function(){
+     $('.form-busqueda').submit(function(event){
+        return false;
+    });
+
+     $('#inp-buscar-simple').click(function(){
+        var keywords = $('#inp-text-busqueda').val();
+        if (keywords != ''){
+            $(location).attr('href', 'busqueda/'+keywords);
+        } else {
+            alert("Ingresa un dato válido en el campo de búsqueda");
+        }
+     });
+
+     $('#inp-buscar-fecha').click(function(){
+        var diaFrom = $('#inpDiaFrom').val();
+        var mesFrom = $('#inpMesFrom').val();
+        var anioFrom = $('#inpAnioFrom').val();
+        var anioTo = $('#inpAnioTo').val();
+        var mesTo = $('#inpMesTo').val();
+        var diaTo = $('#inpDiaTo').val();
+        var fechaFrom = anioFrom+"-"+mesFrom+"-"+diaFrom;
+        var fechaTo = anioTo+"-"+mesTo+"-"+diaTo;
+        $(location).attr('href', 'busquedafecha/'+fechaFrom+'/'+fechaTo);
+     });
+ });
+</script>
+
+<!-- DESMADRE DE LIKES -->
 {{--  <form action="like_delete_success.php" method="POST" style="float: right;">
                                         <input type="hidden" name="inpIdNoticia" value="@php echo $elemento->idNoticia; @endphp"/>
                                         <input type="hidden" name="inpIdUsuario" value="@php echo $idULog; @endphp"/>

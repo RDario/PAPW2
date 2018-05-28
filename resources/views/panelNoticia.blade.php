@@ -1,26 +1,9 @@
-@php
-include("conexionBD.php");
-require_once "DVSeccion.php";
-$connection = conectarBD();
-$querySelect = "SELECT idSeccion, nombreSeccion, idUsuario FROM allsecciones;";
-$resultQuery = mysqli_query($connection, $querySelect) or die ("No se realizo el query");
-mysqli_close($connection);
-
-$arraySecciones = array();
-if ($resultQuery->num_rows) {
-	$rows = $resultQuery->fetch_all(MYSQLI_ASSOC);
-	foreach ($rows as $row) {
-		$arraySecciones[count($arraySecciones)] = new DVSeccion($row['idSeccion'], $row['nombreSeccion'], $row['idUsuario']);		
-	}
-}
-@endphp
-
 @include('header')
 <div class="panel">
 	<div class="container">
 		<div class="divColumnLeft">
 			<h3>Subir nueva noticia</h3>
-			<form action="noticia_success_page.php" method="POST">
+			<form class="form-busqueda" action="noticia_success_page.php" method="POST">
 				<div class="address">
 					<span>Título</span>
 					<input class="inpTitulo" type="text" name="txtTitulo" autofocus="true" required="">
@@ -28,12 +11,11 @@ if ($resultQuery->num_rows) {
 				<div class="address">
 					<span>Sección</span>
 					<select class= "selectSeccion" name="txtSeccion" tabindex="1" required="">
-						@php
-						$num = count($arraySecciones);
-						for ($i=0; $i < $num; $i++) {
-							$elemento = $arraySecciones[$i];
-							echo "<option value=$elemento->idSeccion>$elemento->nombreSeccion</option>";
-						} @endphp
+						@if (isset($dataSeccs))
+						@foreach ($dataSeccs as $secc)
+						<option value="{{ $secc->idSeccion }}">{{ $secc->nombreSeccion }}</option>
+						@endforeach
+						@endif
 					</select>
 				</div>
 				<div class="address">
@@ -41,11 +23,8 @@ if ($resultQuery->num_rows) {
 					<textarea type="text" name="txtDescripcion" tabindex="2"></textarea>
 				</div>
 				<div class="address">
-					@php
-					$nomUser = $_SESSION["nombreULog"];
-					$apellidosUser = $_SESSION["apellidosULog"]; @endphp
 					<span>Autor</span>
-					<input class="inpAutor" type="text" name="txtAutor" tabindex="6" required="" readOnly="" value="@php echo "$nomUser"." "."$apellidosUser"; @endphp">
+					<input class="inpAutor" type="text" name="txtAutor" tabindex="6" required="" readOnly="" value="{{ Session::get('nombreULog') }} {{ Session::get('apellidosULog') }}">
 				</div>
 				<div class="address">
 					<span>¿Noticia especial?</span>
@@ -72,66 +51,64 @@ if ($resultQuery->num_rows) {
 			</form>
 		</div>
 
-		@php
-		if (isset($_SESSION["tipoULog"])) {
-			$tipoUser = $_SESSION["tipoULog"];
-			if (strcmp($tipoUser, "Administrador") == 0) { @endphp
-			<div class="divColumnRight">
-				<h3>Subir nueva sección</h3>
-				<form action="seccion_success_page.php" method="POST">
+		@if(Session::has('tipoULog'))
+		@if(Session::get('tipoULog') == 'Administrador')
+		<div class="divColumnRight">
+			<h3>Subir nueva sección</h3>
+			<form class="form-busqueda" action="seccion_success_page.php" method="POST">
+				<div class="address">
+					<span>Título</span>
+					<input class="inpTitulo" type="text" name="txtTituloSecc" tabindex="8" required="">
+				</div>
+				<div class="address new">
+					<input name="inpGuardarSecc" type="submit" value="Guardar" tabindex="9">
+				</div>
+			</form>
+		</div>
+		<br>
+		<div class="divColumnRight">
+			<br>
+			<h3>Editar seccion</h3>
+			<form class="form-busqueda" method="POST" action="seccion_update_success.php">
+				<div class="address">
+					<select id="inputIdSeccion" class="selectSeccion" name="IdSeccionUpdate" required="" onchange="getSeccion()">
+						@if(isset($dataSeccs))
+						@foreach($dataSeccs as $secc)
+						<option value="{{ $secc->idSeccion }}">{{ $secc->nombreSeccion }}</option>
+						@endforeach
+						@endif
+					</select>
 					<div class="address">
-						<span>Título</span>
-						<input class="inpTitulo" type="text" name="txtTituloSecc" tabindex="8" required="">
+						<input id="inputTextSeccion" class="inpTitulo" type="text" name="txtTitleSecUpdate" required="">
 					</div>
 					<div class="address new">
-						<input name="inpGuardarSecc" type="submit" value="Guardar" tabindex="9">
+						<input id="idBtnSubmitEditar" name="inpEditarSecc" type="submit" value="Actualizar">
 					</div>
-				</form>
-			</div>
+				</div>
+			</form>
+		</div>
+		<br>
+		<div class="divColumnRight">
 			<br>
-			<div class="divColumnRight">
-				<h3>Editar seccion</h3>
-				<form method="POST" action="seccion_update_success.php">
-					<div class="address">
-						<select id="inputIdSeccion" class="selectSeccion" name="IdSeccionUpdate" required="" onchange="getSeccion()">
-							@php
-							$num = count($arraySecciones);
-							for ($i=0; $i < $num; $i++) {
-								$elemento = $arraySecciones[$i];
-								echo "<option value=$elemento->idSeccion>$elemento->nombreSeccion</option>";
-							} @endphp
-						</select>
-						<div class="address">
-							<input id="inputTextSeccion" class="inpTitulo" type="text" name="txtTitleSecUpdate" required="">
-						</div>
-						<div class="address new">
-							<input id="idBtnSubmitEditar" name="inpEditarSecc" type="submit" value="Actualizar">
-						</div>
+			<h3>Eliminar seccion</h3>
+			<form class="form-busqueda" method="POST" action="seccion_delete_success.php">
+				<div class="address">
+					<select class= "selectSeccion" name="txtSeccionEliminar" required="">
+						@if(isset($dataSeccs))
+						@foreach($dataSeccs as $secc)
+						<option value="{{ $secc->idSeccion }}">{{ $secc->nombreSeccion }}</option>
+						@endforeach
+						@endif
+					</select>
+					<div class="address new">
+						<input id="idBtnSubmitEliminar" name="inpEliminarSecc" type="submit" value="Eliminar" onclick="clicked(event);">
 					</div>
-				</form>
-			</div>
-			<br>
-			<div class="divColumnRight">
-				<h3>Eliminar seccion</h3>
-				<form method="POST" action="seccion_delete_success.php">
-					<div class="address">
-						<select class= "selectSeccion" name="txtSeccionEliminar" required="">
-							@php
-							$num = count($arraySecciones);
-							for ($i=0; $i < $num; $i++) {
-								$elemento = $arraySecciones[$i];
-								echo "<option value=$elemento->idSeccion>$elemento->nombreSeccion</option>";
-							} @endphp
-						</select>
-						<div class="address new">
-							<input id="idBtnSubmitEliminar" name="inpEliminarSecc" type="submit" value="Eliminar" onclick="clicked(event);">
-						</div>
-					</div>
-				</form>
-			</div>
-			@php }
-		} @endphp
+				</div>
+			</form>
+		</div>
 		<div class="clearfix"></div>
+		@endif
+		@endif
 	</div>
 </div>
 @include('footer')
@@ -150,5 +127,9 @@ if ($resultQuery->num_rows) {
 			document.getElementById("campoTextSeccion").value = x;
 		}
 		getSeccion();
+
+		$('.form-busqueda').submit(function(event){
+			return false;
+		});
 	});
 </script>

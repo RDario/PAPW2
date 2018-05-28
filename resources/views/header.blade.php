@@ -1,7 +1,3 @@
-@php
-error_reporting(0);
-@endphp
-
 <!doctype html>
 <html lang="{{ app()->getLocale() }}">
 <head>
@@ -22,32 +18,32 @@ error_reporting(0);
             <nav class="navbar navbar-default" role="navigation">
                 <div class="container">
                     <div class="navbar-header">
-                        <a class="navbar-brand" href=""><h1><span>FEIK</span>NEWS</h1></a>
+                        <a class="navbar-brand" href="/"><h1><span>FEIK</span>NEWS</h1></a>
                     </div>
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                         <ul class="nav navbar-nav">
                             @if(Session::has('idULog'))
                             <li>
-                                <a href="panelNoticia">Subir noticia</a>
+                                <a href="{{ route('panel',1) }}">Subir noticia</a>
                             </li>
                             <li>
-                                <a href="noticias/{{ Session::get('idULog') }}/{{ Session::get('tipoULog') }}">Noticias sin publicar</a>
+                                <a href="{{ route('noticias',['id'=>Session::get('idULog'),'tipo'=>Session::get('tipoULog')]) }}">Noticias sin publicar</a>
                             </li>
                             @endif
                         </ul>
                         <div id="divCuadroPerfil">
                             <span id="txtCuadroPerfil">
                                @if(Session::has('nombreULog'))
-                               <a id="txtCuadroPerfil" href="{{ route('perfil') }}/{{ Session::get('idULog') }}">Hola {{ Session::get('nombreULog') }}<a/>
-                                <a id="txtDeslog" href="" onclick="">Cerrar sesión<a/>
+                               <a id="txtCuadroPerfil" href="{{ route('perfil',Session::get('idULog')) }}">Hola {{ Session::get('nombreULog') }}<a/>
                                    @if(Session::has('imgAvatarULog'))
-                                   <img id="imgCuadroPerfil" src="images/profile/{{ Session::get('imgAvatarULog') }}" style="width: 50px; height: 50px;" >
+                                   <img id="imgCuadroPerfil" src="{{ asset('images/profile/'.Session::get('imgAvatarULog')) }}" style="width: 50px; height: 50px;" >
+                                   <a id="txtDeslog" href="" style="font-size: 12px;" onclick="">Cerrar sesión<a/>
                                    @else
-                                   <img id="imgCuadroPerfil" src="images/avatar.jpg" style="width: 50px; height: 50px;" >
+                                   <img id="imgCuadroPerfil" src="{{ asset('images/avatar.jpg') }}" style="width: 50px; height: 50px;" >
                                    @endif
                                    @else
-                                   <a href="{{ route('registro') }}">Inicia sesión aquí<a/>
-                                       @endif
+                                   <a href="login/1">Inicia sesión aquí<a/>
+                                    @endif
                                    </span>
                                </div>
                            </div>
