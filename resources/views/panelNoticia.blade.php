@@ -3,7 +3,10 @@
 	<div class="container">
 		<div class="divColumnLeft">
 			<h3>Subir nueva noticia</h3>
-			<form class="form-busqueda" action="noticia_success_page.php" method="POST">
+			<form action="{{ route('subirnoticia') }}" method="POST">
+				{{ csrf_field() }}
+				@php
+				@endphp
 				<div class="address">
 					<span>Título</span>
 					<input class="inpTitulo" type="text" name="txtTitulo" autofocus="true" required="">
@@ -11,7 +14,7 @@
 				<div class="address">
 					<span>Sección</span>
 					<select class= "selectSeccion" name="txtSeccion" tabindex="1" required="">
-						@if (isset($dataSeccs))
+						@if(isset($dataSeccs))
 						@foreach ($dataSeccs as $secc)
 						<option value="{{ $secc->idSeccion }}">{{ $secc->nombreSeccion }}</option>
 						@endforeach
@@ -24,6 +27,7 @@
 				</div>
 				<div class="address">
 					<span>Autor</span>
+					<input type="hidden" name="idAutor" value="{{ Session::get('idULog') }}" placeholder="">
 					<input class="inpAutor" type="text" name="txtAutor" tabindex="6" required="" readOnly="" value="{{ Session::get('nombreULog') }} {{ Session::get('apellidosULog') }}">
 				</div>
 				<div class="address">
@@ -46,7 +50,7 @@
 					<textarea class="textareaTexto" type="text" tabindex="9" name="txtTextoCompleto" rows="20" required=""></textarea>
 				</div>
 				<div class="address new">
-					<input name="inpGuardarNoti" type="submit" value="Guardar" tabindex="10">
+					<input id="inpGuardarNoti" name="inpGuardarNoti" type="submit" value="Guardar" tabindex="10">
 				</div>
 			</form>
 		</div>
@@ -55,10 +59,12 @@
 		@if(Session::get('tipoULog') == 'Administrador')
 		<div class="divColumnRight">
 			<h3>Subir nueva sección</h3>
-			<form class="form-busqueda" action="seccion_success_page.php" method="POST">
+			<form action="{{ route('altaseccion') }}" method="POST">
+				{{ csrf_field() }}
 				<div class="address">
 					<span>Título</span>
 					<input class="inpTitulo" type="text" name="txtTituloSecc" tabindex="8" required="">
+					<input class="inpTitulo" type="hidden" name="txtIdUser" tabindex="8" required="" value="{{ Session::get('idULog') }}">
 				</div>
 				<div class="address new">
 					<input name="inpGuardarSecc" type="submit" value="Guardar" tabindex="9">
@@ -69,7 +75,7 @@
 		<div class="divColumnRight">
 			<br>
 			<h3>Editar seccion</h3>
-			<form class="form-busqueda" method="POST" action="seccion_update_success.php">
+			<form class="form-busqueda" method="POST" action="">
 				<div class="address">
 					<select id="inputIdSeccion" class="selectSeccion" name="IdSeccionUpdate" required="" onchange="getSeccion()">
 						@if(isset($dataSeccs))
@@ -91,7 +97,7 @@
 		<div class="divColumnRight">
 			<br>
 			<h3>Eliminar seccion</h3>
-			<form class="form-busqueda" method="POST" action="seccion_delete_success.php">
+			<form class="form-busqueda" method="POST" action="">
 				<div class="address">
 					<select class= "selectSeccion" name="txtSeccionEliminar" required="">
 						@if(isset($dataSeccs))
@@ -121,7 +127,7 @@
 
 <script>
 	$(document).ready(function(){
-		function getSeccion() {
+		function getSeccion(){
 			var x = document.getElementById("campoIdSeccion");
 			x = x.options[x.selectedIndex].text;
 			document.getElementById("campoTextSeccion").value = x;

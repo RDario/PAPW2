@@ -76,6 +76,7 @@ $arrayAnio = array(
                     <ul class="listaNewsHorizontal">
                        @if (isset($dataNotis))
                        @foreach ($dataNotis as $noti)
+                       @if(isset($noti->isEspecial))
                        @if($noti->isEspecial == 1)
                        <li>
                         <div class="divNotiHeader">
@@ -84,6 +85,7 @@ $arrayAnio = array(
                            <a href="noticia/{{ $noti->idNoticia }}" style="color: #fff; background-color: #ee5656; padding: 3px">Leer más</a>
                        </div>
                    </li>
+                   @endif
                    @endif
                    @endforeach
                    @endif
@@ -96,15 +98,43 @@ $arrayAnio = array(
 
             @if (isset($dataNotis))
             @foreach ($dataNotis as $noti)
+            @if(isset($noti->isEspecial))
             @if($noti->isEspecial != 1)
             <div class="divSeccion">
                 <h2 class="tituloSeccion">{{ utf8_decode($noti->seccion) }}</h2>
             </div>
             <div class="divNoticia">
+                @if(isset($noti->imgNoti))
                 @if($noti->imgNoti != "")
                 <img style="width: 400px; height: 380px" class="imgNoticia" src="images/{{ $noti->imgNoti }}" />
                 @else
                 <img class="imgNoticia" src="images/placeholder.png" alt="" />
+                @endif
+                @endif
+                <span style="float: right; padding-left: 5px; color: #428bca;"># Likes</span>
+                @if(Session::has('idULog'))
+                {{-- HACER DESMADRE DE LIKES AQUI --}}
+                @endif
+                <div class="datosNoticia">
+                    <span class="txtTitulo">{{ utf8_decode($noti->titulo) }}</span>
+                    <p class="txtDescripcion">{{ utf8_decode($noti->descripcion) }}</p>
+                    <p class="txtCredito">Publicado por: {{ utf8_decode($noti->autor) }}</p>
+                    <span class="txtFecha">Fecha: {{ $noti->fechaReciente }}</span>
+                    <a class="leerMas" href="noticia/{{ $noti->idNoticia }}">LEER MÁS</a>
+                </div>
+            </div>
+            @endif
+            @else
+            <div class="divSeccion">
+                <h2 class="tituloSeccion">{{ utf8_decode($noti->seccion) }}</h2>
+            </div>
+            <div class="divNoticia">
+                @if(isset($noti->imgNoti))
+                @if($noti->imgNoti != "")
+                <img style="width: 400px; height: 380px" class="imgNoticia" src="images/{{ $noti->imgNoti }}" />
+                @else
+                <img class="imgNoticia" src="images/placeholder.png" alt="" />
+                @endif
                 @endif
                 <span style="float: right; padding-left: 5px; color: #428bca;"># Likes</span>
                 @if(Session::has('idULog'))
@@ -215,7 +245,7 @@ $arrayAnio = array(
         } else {
             alert("Ingresa un dato válido en el campo de búsqueda");
         }
-     });
+    });
 
      $('#inp-buscar-fecha').click(function(){
         var diaFrom = $('#inpDiaFrom').val();
@@ -227,7 +257,7 @@ $arrayAnio = array(
         var fechaFrom = anioFrom+"-"+mesFrom+"-"+diaFrom;
         var fechaTo = anioTo+"-"+mesTo+"-"+diaTo;
         $(location).attr('href', 'busquedafecha/'+fechaFrom+'/'+fechaTo);
-     });
+    });
  });
 </script>
 

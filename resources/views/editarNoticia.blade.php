@@ -7,17 +7,18 @@
 				<form method="POST" action="noticia_delete_success.php">
 					@if(isset($dataNoti))
 					@foreach($dataNoti as $noti)
-					@endforeach
 					<div class="address">
 						<input class="inpTitulo" readOnly="" type="hidden" name="txtIdNoticiaDelete" required="" value="{{ $noti->idNoticia }}">
 					</div>
 					<div class="address new">
 						<input name="inpGuardarMedia" type="submit" value="Eliminar noticia">
 					</div>
+					@endforeach
 					@endif
 				</form>
 			</div>
-			<form action="noticia_update_success.php" method="POST">
+			<form action="{{ route('updatenoticia') }}" method="POST">
+				{{ csrf_field() }}
 				<div class="address">
 					<span>Validar noticia</span>
 					@if(isset($dataNoti))
@@ -119,7 +120,8 @@
 		</div>
 		<hr>
 		<div class="columnEdit">
-			<form enctype="multipart/form-data" action="images_upload_success.php" method="POST">
+			<form enctype="multipart/form-data" action="{{ route('imagesupload') }}" method="POST">
+				{{ csrf_field() }}
 				<div class="address">
 					<span>Sube una o varias imágenes (max 3)</span>
 					<div class="divMediasNoticia">
@@ -129,6 +131,8 @@
 						<img class="imgMediasImg" id="idMediaImg0{{ $indice }}" onchange="loadFilePort(event)" src="{{ asset('images/'.$multi->urlMedia) }}">
 							<input type="file" accept="image/*" name="inpImgNoti0{{ $indice }}" />
 							<input type="hidden" name="inpIdMedia0{{ $indice }}" value="{{ $multi->idMultimedia }}" />
+							<input type="hidden" name="inpTextMedia0{{ $indice }}" value="{{ $multi->urlMedia }}" />
+							<input type="hidden" name="inpidNoticia0{{ $indice }}" value="{{ $multi->idNoticia }}" />
 						@php $indice++; @endphp
 						@endif
 						@endforeach
@@ -140,7 +144,7 @@
 				<input class="inpTitulo" type="hidden" name="txtIdNoticiaMedia" required="" value="{{ $noti->idNoticia }}">
 			</form>
 			<hr>
-			<form enctype="multipart/form-data" action="videos_upload_success.php" method="POST">
+			<form enctype="multipart/form-data" action="{{ route('videoupdate') }}" method="POST">
 				<div class="address">
 					<span>Sube un o varios videos (max 3)</span>
 					<div class="divMediasNoticia">

@@ -86,8 +86,8 @@ $arrayAnio = array(
 								<video width="100%" height="320" controls>
 									<source src="{{ asset('videos/'.$multi->urlMedia) }}" type="video/mp4">
 									</video>
-								@endif
-								@endif
+									@endif
+									@endif
 								</div>
 								@endforeach
 								@endif
@@ -127,7 +127,7 @@ $arrayAnio = array(
 						$date = new DateTime($coment->fecha);
 						@endphp
 						<div class="divCajaComentario">
-							<img class="imgComentario" src="{{ asset('images/profile/$coment->imgAvatar') }}" style="width: 60px; height: 60px; float: left;">
+							<img class="imgComentario" src="{{ asset('images/profile/'.$coment->imgAvatar) }}" style="width: 60px; height: 60px; float: left;">
 							<a href="{{ route('perfil',$coment->idUsuario) }}">{{ utf8_decode($coment->autor) }}</a>
 							<br>
 							<p>{{ utf8_decode($coment->texto) }}</p>
@@ -153,39 +153,40 @@ $arrayAnio = array(
 
 						<div class="leave">
 							<h4>Deja un comentario</h4>
-							<form id="commentform" method="POST" action="comentario_insert_success.php">
+							<form id="commentform" method="POST" action="{{ route('addcomment') }}">
+								{{ csrf_field() }}
 								<p class="comment-form-author-name"><label for="author">Nombre</label>
 									@if(Session::has('nombreULog'))
-									<input name="txtNombreUser" type="text" size="30" required="" readOnly="" value="{{ Session::get('nombreULog') }} {{ Session::get('apellidosULog') }}">
+									<input id="txtNombre" name="txtNombreUser" type="text" size="30" required="" readOnly="" value="{{ Session::get('nombreULog') }} {{ Session::get('apellidosULog') }}">
 									@else
-									<input name="txtNombreUser" type="text" size="30" required="" placeholder="Ingresa un nombre para identificarte" value="">
+									<input id="txtNombre" name="txtNombreUser" type="text" size="30" required="" placeholder="Ingresa un nombre para identificarte" value="">
 									@endif
 									<p class="comment-form-email">
 										<label class="email">Correo eléctronico</label>
 										@if(Session::has('correoULog'))
-										<input name="txtEmailUser" type="text" required="" readOnly="" value="{{ Session::get('correoULog') }}">
+										<input id="txtEmail" name="txtEmailUser" type="text" required="" readOnly="" value="{{ Session::get('correoULog') }}">
 										@else
-										<input name="txtEmailUser" type="text" required="" placeholder="Ingresa un correo eléctronico válido" 
+										<input id="txtEmail" name="txtEmailUser" type="text" required="" placeholder="Ingresa un correo eléctronico válido" 
 										value="" pattern="[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*@[a-zA-Z0-9_]+([.][a-zA-Z0-9_]+)*[.][a-zA-Z]{1,5}">
 										@endif
 									</p>
 									<br>
 									<p class="comment-form-comment">
-										<textarea placeholder="Comenta lo que quieras!" name="txtTextoUser" requerid=""></textarea>
+										<textarea id="txtTextoComplete" placeholder="Comenta lo que quieras!" name="txtTextoUser" requerid=""></textarea>
 									</p>
 									<div class="clearfix"></div>
 
 									@if(Session::has('idULog'))
-									<input name="txtIdUser" type="hidden" required="" value="{{ Session::get('idULog') }}">
+									<input id="txtIdUs" name="txtIdUser" type="hidden" required="" value="{{ Session::get('idULog') }}">
 									@else
-									<input name="txtIdUser" type="hidden" required="" value="">
+									<input id="txtIdUs" name="txtIdUser" type="hidden" required="" value="">
 									@endif
 									@if(isset($dataNoti))
 									@foreach($dataNoti as $noti)
-									<input name="txtIdNoticia" type="hidden" value="{{ $noti->idNoticia }}" required="">
+									<input id="txtIdNoti" name="txtIdNoticia" type="hidden" value="{{ $noti->idNoticia }}" required="">
 									@endforeach
 									@endif
-									<input name="txtIdCommentPapa" type="hidden" value="0" required="">
+									<input id="txtIdComentPapa" name="txtIdCommentPapa" type="hidden" value="0" required="">
 									<p class="form-submit">
 										<input type="submit" value="Enviar">
 									</p>
@@ -295,8 +296,6 @@ $arrayAnio = array(
 						var diaTo = $('#inpDiaTo').val();
 						var fechaFrom = anioFrom+"-"+mesFrom+"-"+diaFrom;
 						var fechaTo = anioTo+"-"+mesTo+"-"+diaTo;
-
-						console.log("Valores-fecha---> "+fechaFrom+" _ "+fechaTo);
 						$(location).attr('href', 'busquedafecha/'+fechaFrom+'/'+fechaTo);
 					});
 				});

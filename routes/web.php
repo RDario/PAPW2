@@ -26,7 +26,15 @@ Route::get('editar/{id}', ['as' => 'editar', 'uses' => 'ControllerDV@editarNotic
 Route::get('noticias/{id}/{tipo}', ['as' => 'noticias', 'uses' => 'ControllerDV@listadonoticias']);
 Route::get('busqueda/{keywords}', ['as' => 'busqueda', 'uses' => 'ControllerDV@listadobusqueda']);
 Route::get('busquedafecha/{fechaInicial}/{fechaFin}', ['as' => 'busquedafecha', 'uses' => 'ControllerDV@listadobusquedafecha']);
-Route::post('loginsuccess/{id?}', ['as' => 'loginsuccess', 'uses' => 'ControllerDV@successLogin']);
+Route::post('loginsuccess', ['as' => 'loginsuccess', 'uses' => 'ControllerDV@successLogin']);
+Route::post('altanoticia', ['as' => 'subirnoticia', 'uses' => 'ControllerDV@subirNoticia']);
+Route::post('altaseccion', ['as' => 'altaseccion', 'uses' => 'ControllerDV@altaseccion']);
+Route::post('updatenoticia', ['as' => 'updatenoticia', 'uses' => 'ControllerDV@updatenoticia']);
+Route::post('videoupdate', ['as' => 'videoupdate', 'uses' => 'ControllerDV@videoupdate']);
+Route::post('imagesupload', ['as' => 'imagesupload', 'uses' => 'ControllerDV@imagesupload']);
+Route::post('editarperfil', ['as' => 'editarperfil', 'uses' => 'ControllerDV@editarperfil']);
+Route::post('addcomment', ['as' => 'addcomment', 'uses' => 'ControllerDV@insertComment']);
+Route::get('loginout/{id?}', ['as' => 'loginout', 'uses' => 'ControllerDV@loginout']);
 Route::get('header', 'ControllerDV@header');
 Route::get('footer', 'ControllerDV@footer');
 Route::get('panel/{id?}', ['as' => 'panel', 'uses' => 'ControllerDV@panel']);

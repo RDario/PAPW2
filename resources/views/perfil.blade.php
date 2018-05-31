@@ -1,33 +1,4 @@
 @php
-//$idUserLog = $_GET['id'];
-$idUserLog = 1;
-include("conexionBD.php");
-require_once "DVUsuario.php";
-$connection = conectarBD();
-
-$querySeccion = "CALL obtenerDatosUsuario($idUserLog)";
-$resultQuery = mysqli_query($connection, $querySeccion) or die ("Hubo un error al consultar la base de datos");
-mysqli_close($connection);
-
-if ($resultQuery->num_rows) {
-	$rows = $resultQuery->fetch_all(MYSQLI_ASSOC);
-	foreach ($rows as $row) {
-		$usuarioComplete =  new DVUsuario(
-			$row['idUsuario'],
-			$row['nombre'],
-			$row['apellidos'],
-			$row['correo'],
-			$row['contrasenia'],
-			$row['telefono'],
-			$row['fechaNacimiento'],
-			$row['tipoUsuario'],
-			$row['imgAvatar'],
-			$row['imgPortada']);
-	}
-}
-$diaNac = substr($usuarioComplete->fechaNacimiento, 0, 2);
-$mesNac = substr($usuarioComplete->fechaNacimiento, 3, -5);
-$anioNac = substr($usuarioComplete->fechaNacimiento, -4);
 $arrayDias = array(
 	1=>"01",
 	2=> "02",
@@ -174,152 +145,201 @@ $arrayAnio = array(
 	98=> "1919",
 	99=> "1918",
 	100=> "1917");
+	@endphp
 
-if (isset($_SESSION["tipoULog"])) {
-	$tipoUser = $_SESSION["tipoULog"];
-}
-@endphp
+	@include('header')
+	<form enctype="multipart/form-data" action="{{ route('editarperfil') }}" method="POST">
+		{{ csrf_field() }}
+		<div class="divPortadaPerfil">
+			@if(isset($datos))
+			@foreach($datos as $user)
+			<img src="{{ asset('images/profile/'.$user->imgPortada) }}" class="imgPortada" id="imgOutputPortada">
+			<input id="inpImgPortada" type="hidden" name="txtImgPortada" value="{{ $user->imgPortada }}">
+			@endforeach
+			@endif
+			<input type="hidden" value="{{ csrf_token() }}" name="_token">
+			<input class="btnEditarPortada" type="file" accept="image/*" name="inpImgPortada" onchange="loadFilePort(event)" />
+			<script>
+				var loadFilePort = function (event) {
+					var output = document.getElementById('imgOutputPortada');
+					output.src = URL.createObjectURL(event.target.files[0]);
+					var imgout = $('#imgOutputPortada').attr('src');
+					var img_name = imgout.split('//').pop();
+					img_name = img_name.split('/').pop();
+				};
+			</script>
+		</div>
+		<div class="account">
+			<div class="container">
+				<div class="account-bottom">
+					<div class="col-md-6 account-left">
+						@if(Session::has('tipoULog'))
+						@if(Session::get('tipoULog') == 'Administrador')
+						<div class="divBtnEditar">
+							<button id="inpEditar" class="btnEditar" type="button" onclick="functionIsDisabled('inpEditar');">Editar</button>
+							<button id="inpEliminar" class="btnEditar" type="button" onclick="">Eliminar cuenta</button>
+						</div>
+						@else
+						<div class="divBtnEditar">
+							<button id="inpEditar" class="btnEditar" type="button" onclick="functionIsDisabled('inpEditar');">Editar</button>
+						</div>
+						@endif
+						@endif
 
-@include('header')
-<form enctype="multipart/form-data" action="usuario_update_success.php" method="POST">
-	<div class="divPortadaPerfil">
-		<img src="@php echo 'images/profile/'.$usuarioComplete->imgPortada; @endphp" class="imgPortada" id="imgOutputPortada">
-		<input id="inpImgPortada" type="hidden" name="txtImgPortada" value="@php echo $usuarioComplete->imgPortada; @endphp">
-		<input class="btnEditarPortada" type="file" accept="image/*" name="inpImgPortada" onchange="loadFilePort(event)" />
-		<script>
-			var loadFilePort = function (event) {
-				var output = document.getElementById('imgOutputPortada');
-				output.src = URL.createObjectURL(event.target.files[0]);
-			};
-		</script>
-	</div>
-	<div class="account">
-		<div class="container">
-			<div class="account-bottom">
-				<div class="col-md-6 account-left">
-					@php
-					if ($tipoUser != NULL && strcmp($tipoUser, "Administrador") == 1) {
-						@endphp
-					<div class="divBtnEditar">
-						<button id="inpEditar" class="btnEditar" type="button" onclick="functionIsDisabled('inpEditar');">Editar</button>
-						<button id="inpEliminar" class="btnEditar" type="button" onclick="">Eliminar cuenta</button>
-					</div>
-					@php } else { @endphp
-					<div class="divBtnEditar">
-						<button id="inpEditar" class="btnEditar" type="button" onclick="functionIsDisabled('inpEditar');">Editar</button>
-					</div>
-					@php } @endphp
-					<div class="address">
-						<span>Tipo de cuenta</span>
-						@php
-						if ($tipoUser != NULL && strcmp($tipoUser, "Administrador") == 0) { @endphp
-						<select id="inpTipo" name="txtTipoCuenta" placeholder="" disabled>
-							<option value="@php echo $usuarioComplete->tipoUsuario; @endphp" selected>@php echo $usuarioComplete->tipoUsuario; @endphp</option>
-							<option>Normal</option>
-							<option>Reportero</option>
-						</select>
-						@php 
-					} else if ($tipoUser != NULL && strcmp($tipoUser, "Reportero") == 0) { @endphp
-						<select id="inpTipo" name="txtTipoCuenta" placeholder="" disabled>
-							<option value="@php echo $usuarioComplete->tipoUsuario; @endphp" selected>@php echo $usuarioComplete->tipoUsuario; @endphp</option>
-							<option>Normal</option>
-						</select>
-						@php } else { @endphp
-						<select id="inpTipo" name="txtTipoCuenta" placeholder="" disabled>
-							<option value="@php echo $usuarioComplete->tipoUsuario; @endphp" selected>@php echo $usuarioComplete->tipoUsuario; @endphp</option>
-						</select>
-						@php } @endphp
-					</div>
-					<div class="address">
-						<span>Nombre</span>
-						<input id="inpIdUsuario" type="hidden" name="txtIdUsuario" value="@php echo $usuarioComplete->idUsuario; @endphp" disabled>
-						<input id="inpNombre" type="text" name="txtNombre" value="@php echo $usuarioComplete->nombre; @endphp" disabled>
-					</div>
-					<div class="address">
-						<span>Apellidos</span>
-						<input id="inpApellidos" type="text" name="txtApellidos" value="@php echo $usuarioComplete->apellidos; @endphp" disabled>
-					</div>
-					<div class="address">
-						<span>Correo electronico</span>
-						<input id="inpEmail" type="text" name="txtEmail" value="@php echo $usuarioComplete->correo; @endphp" disabled>
-					</div>
-					<div class="address">
-						<span>Contraseña</span>
-						<input id="inpContrasenia" type="password" name="txtPassword" value="@php echo $usuarioComplete->contrasenia; @endphp" disabled>
-					</div>
-					<div class="address">
-						<span>Fecha de nacimiento</span>
-						<select id="inpNacDia" name="txtNacDia" placeholder="" disabled>
-							@php
-							foreach($arrayDias as $key => $value) {
-								if (strcmp($value, $diaNac) == 0) {
-									echo "<option selected value=' $value '> $value </option>";	
-								} else {
-									echo "<option value=' $value '> $value </option>";
-								}
-							} @endphp
-						</select>
-						<select id="inpNacMes" name="txtNacMes" placeholder="" disabled>
-							@php
-							foreach($arrayMes as $key => $value) {
-								if (strcmp($value, $mesNac) == 0) {
-									echo "<option selected value=' $value '> $value </option>";	
-								} else {
-									echo "<option value=' $value '> $value </option>";
-								}
-							} @endphp
-						</select>
-						<select id="inpNacAnio" name="txtNacAnio" placeholder="" disabled>
-							@php
-							foreach($arrayAnio as $key => $value) {
-								if (strcmp($value, $anioNac) == 0) {
-									echo "<option selected value=' $value '> $value </option>";	
-								} else {
-									echo "<option value=' $value '> $value </option>";
-								}
-							} @endphp
-						</select>
-					</div>
-					<div class="address">
-						<span>Telefono (opcional)</span>
-						<input id="inpTelefono" type="text" name="txtTelefono" value="@php echo $usuarioComplete->telefono; @endphp" disabled>
-					</div>
-					<div class="address new">
-						<input id="inpSubmit" name="inpSubmit" type="submit" value="Guardar" disabled>
+						<div class="address">
+							<span>Tipo de cuenta</span>
+							@if(Session::has('tipoULog'))
+							@if(Session::get('tipoULog') == 'Administrador')
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<select id="inpTipo" name="txtTipoCuenta" placeholder="" disabled>
+								<option value="{{ $user->tipoUsuario }}" selected>{{ $user->tipoUsuario }}</option>
+								<option value="Normal">Normal</option>
+								<option value="Reportero">Reportero</option>
+							</select>
+							@endforeach
+							@endif
+							@elseif(Session::get('tipoULog') == 'Reportero')
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<select id="inpTipo" name="txtTipoCuenta" placeholder="" disabled>
+								<option value="{{ $user->tipoUsuario }}" selected>{{ $user->tipoUsuario }}</option>
+								<option value="Normal">Normal</option>
+							</select>
+							@endforeach
+							@endif
+							@else
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<select id="inpTipo" name="txtTipoCuenta" placeholder="" disabled>
+								<option value="{{ $user->tipoUsuario }}" selected>{{ $user->tipoUsuario }}</option>
+							</select>
+							@endforeach
+							@endif
+							@endif
+							@endif
+						</div>
+						<div class="address">
+							<span>Nombre</span>
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<input id="inpIdUsuario" type="hidden" name="txtIdUsuario" value="{{ $user->idUsuario }}" disabled>
+							<input id="inpNombre" type="text" name="txtNombre" value="{{ $user->nombre }}" disabled>
+							@endforeach
+							@endif
+						</div>
+						<div class="address">
+							<span>Apellidos</span>
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<input id="inpApellidos" type="text" name="txtApellidos" value="{{ $user->apellidos }}" disabled>
+							@endforeach
+							@endif
+						</div>
+						<div class="address">
+							<span>Correo electronico</span>
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<input id="inpEmail" type="text" name="txtEmail" value="{{ $user->correo }}" disabled>
+							@endforeach
+							@endif
+						</div>
+						<div class="address">
+							<span>Contraseña</span>
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<input id="inpContrasenia" type="password" name="txtPassword" value="{{ $user->contrasenia }}" disabled>
+							@endforeach
+							@endif
+						</div>
+						<div class="address">
+							<span>Fecha de nacimiento</span>
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<select id="inpNacDia" name="txtNacDia" placeholder="" disabled>
+								@php
+								foreach($arrayDias as $key => $value){
+									if (strcmp($value, $user->fechaNacimiento) == 0){
+										echo "<option selected value=' $value '> $value </option>";	
+									} else {
+										echo "<option value=' $value '> $value </option>";
+									}
+								} @endphp
+							</select>
+							<select id="inpNacMes" name="txtNacMes" placeholder="" disabled>
+								@php
+								foreach($arrayMes as $key => $value) {
+									if (strcmp($value, $user->fechaNacimiento) == 0) {
+										echo "<option selected value=' $value '> $value </option>";	
+									} else {
+										echo "<option value=' $value '> $value </option>";
+									}
+								} @endphp
+							</select>
+							<select id="inpNacAnio" name="txtNacAnio" placeholder="" disabled>
+								@php
+								foreach($arrayAnio as $key => $value) {
+									if (strcmp($value, $user->fechaNacimiento) == 0) {
+										echo "<option selected value=' $value '> $value </option>";	
+									} else {
+										echo "<option value=' $value '> $value </option>";
+									}
+								} @endphp
+							</select>
+							@endforeach
+							@endif
+						</div>
+						<div class="address">
+							<span>Telefono (opcional)</span>
+							@if(isset($datos))
+							@foreach($datos as $user)
+							<input id="inpTelefono" type="text" name="txtTelefono" value="{{ $user->telefono }}" disabled>
+							@endforeach
+							@endif
+						</div>
+						<div class="address new">
+							<input id="inpSubmit" name="inpSubmit" type="submit" value="Guardar" disabled>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="divImgAvatar">
-				<div class="divBtnEditar">
-					<input id="inpImgAvatar" type="hidden" name="txtImgAvatar" value="@php echo $usuarioComplete->imgAvatar; @endphp">
-					<input type="file" accept="image/*" name="inpImgPerfil" onchange="loadFile(event)" />
+				@if(isset($datos))
+				@foreach($datos as $user)
+				<div class="divImgAvatar">
+					<div class="divBtnEditar">
+						<input id="inpImgAvatar" type="hidden" name="txtImgAvatar" value="{{ $user->imgAvatar }}">
+						<input type="file" accept="image/*" name="inpImgPerfil" onchange="loadFile(event)" />
+					</div>
+					<img src="{{ asset('images/profile/'.$user->imgAvatar) }}" class="imgPerfil" id="imgOutput">
+					@endforeach
+					@endif
+					<script>
+						var loadFile = function (event){
+							var output = document.getElementById('imgOutput');
+							output.src = URL.createObjectURL(event.target.files[0]);
+							var imgout = $('#imgOutput').attr('src');
+							var img_name = imgout.split('//').pop();
+							img_name = img_name.split('/').pop();
+						};
+					</script>
 				</div>
-				<img src="@php echo 'images/profile/'.$usuarioComplete->imgAvatar; @endphp" class="imgPerfil" id="imgOutput">
-				<script>
-					var loadFile = function (event) {
-						var output = document.getElementById('imgOutput');
-						output.src = URL.createObjectURL(event.target.files[0]);
-					};
-				</script>
-			</div>
-		</form>
+			</form>
+		</div>
 	</div>
-</div>
-@include('footer')
+	@include('footer')
 
-<script type="text/javascript">
-	function functionIsDisabled(param1) {
-		document.getElementById("inpIdUsuario").disabled = false;
-		document.getElementById("inpNombre").disabled = false;
-		document.getElementById("inpApellidos").disabled = false;
-		document.getElementById("inpEmail").disabled = false;
-		document.getElementById("inpContrasenia").disabled = false;
-		document.getElementById("inpTelefono").disabled = false;
-		document.getElementById("inpNacDia").disabled = false;
-		document.getElementById("inpNacMes").disabled = false;
-		document.getElementById("inpNacAnio").disabled = false;
-		document.getElementById("inpSubmit").disabled = false;
-		document.getElementById("inpTipo").disabled = false;
+	<script type="text/javascript">
+		function functionIsDisabled(param1) {
+			document.getElementById("inpIdUsuario").disabled = false;
+			document.getElementById("inpNombre").disabled = false;
+			document.getElementById("inpApellidos").disabled = false;
+			document.getElementById("inpEmail").disabled = false;
+			document.getElementById("inpContrasenia").disabled = false;
+			document.getElementById("inpTelefono").disabled = false;
+			document.getElementById("inpNacDia").disabled = false;
+			document.getElementById("inpNacMes").disabled = false;
+			document.getElementById("inpNacAnio").disabled = false;
+			document.getElementById("inpSubmit").disabled = false;
+			document.getElementById("inpTipo").disabled = false;
 			// document.getElementById("inpEditar").style.display = "none";
 			return false;
 		}

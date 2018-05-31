@@ -37,7 +37,7 @@
                                <a id="txtCuadroPerfil" href="{{ route('perfil',Session::get('idULog')) }}">Hola {{ Session::get('nombreULog') }}<a/>
                                    @if(Session::has('imgAvatarULog'))
                                    <img id="imgCuadroPerfil" src="{{ asset('images/profile/'.Session::get('imgAvatarULog')) }}" style="width: 50px; height: 50px;" >
-                                   <a id="txtDeslog" href="" style="font-size: 12px;" onclick="">Cerrar sesión<a/>
+                                   <a id="txtDeslog" href="{{ route('loginout') }}" style="font-size: 12px;" onclick="">Cerrar sesión<a/>
                                    @else
                                    <img id="imgCuadroPerfil" src="{{ asset('images/avatar.jpg') }}" style="width: 50px; height: 50px;" >
                                    @endif
