@@ -78,24 +78,24 @@ class ControllerDV extends Controller {
 
         if ($request->idSecc != null && $request->idSecc != ''){
             if ($request->idSecc == 'notCom'){
-                $noticias = DB::select('CALL obtenerNoticiasConMasComens');
+                $noticias = DB::select('CALL obtenerNoticiasConMasComens')->paginate(8);
 
             } else if($request->idSecc == 'notLik'){
-                $noticias = DB::select('CALL obtenerNoticiasConMasLikes');
+                $noticias = DB::select('CALL obtenerNoticiasConMasLikes')->paginate(8);
                 
             } else {
-                $noticias = DB::select('CALL obtenerNoticiasBySeccion(?)', array($request->idSecc));
+                $noticias = DB::select('CALL obtenerNoticiasBySeccion(?)', array($request->idSecc))->paginate(8);
             }
         } else {
-            $noticias = DB::table('newultimasnoticiasvalidadas')->get();
+            $noticias = DB::table('newultimasnoticiasvalidadas')->paginate(8);
         }
-        foreach ($noticias as $noti) {
+        foreach ($noticias as $noti){
             array_push($arraynotis, $noti);
         }
-        foreach ($secciones as $secc) {
+        foreach ($secciones as $secc){
             array_push($arrayseccs, $secc);
         }
-        $dataToSend = array('dataNotis'=>$arraynotis,'dataSeccs'=>$arrayseccs);
+        $dataToSend = array('dataNotis'=>$noticias,'dataSeccs'=>$arrayseccs);
         return view('portada', $dataToSend);
     }
     public function front(){

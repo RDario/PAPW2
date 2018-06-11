@@ -151,6 +151,10 @@ $arrayAnio = array(
             @endif
             @endforeach
             @endif
+
+            <div class="div-pagitation-mine text-center" style="height:50px;">
+                {{ $dataNotis->links() }}
+            </div>
         </div>
 
         <div class="col-md-4 mag-inner-right">
